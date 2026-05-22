@@ -121,7 +121,7 @@ export default function BlogPage() {
                 transition={{ duration: 0.4 }}
               >
                 <Link
-                  href={`/blog/${featured.slug}`}
+                  href={`/blogs/${featured.slug}`}
                   className="group grid grid-cols-1 lg:grid-cols-5 gap-5 cursor-pointer"
                 >
                   <div className="lg:col-span-3 relative aspect-[16/10] overflow-hidden bg-gray-50">
@@ -179,7 +179,7 @@ export default function BlogPage() {
                     transition={{ delay: index * 0.04, duration: 0.3 }}
                   >
                     <Link
-                      href={`/blog/${item.slug}`}
+                      href={`/blogs/${item.slug}`}
                       className="group block cursor-pointer"
                     >
                       <div className="relative aspect-[16/10] overflow-hidden bg-gray-50 mb-3">

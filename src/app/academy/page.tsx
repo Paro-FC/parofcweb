@@ -89,6 +89,22 @@ export default function AcademyPage() {
           </blockquote>
         ),
       },
+      list: {
+        bullet: ({ children }) => (
+          <ul className="list-disc list-outside pl-6 mb-5 space-y-2 text-base md:text-lg text-gray-700 leading-relaxed">
+            {children}
+          </ul>
+        ),
+        number: ({ children }) => (
+          <ol className="list-decimal list-outside pl-6 mb-5 space-y-2 text-base md:text-lg text-gray-700 leading-relaxed">
+            {children}
+          </ol>
+        ),
+      },
+      listItem: {
+        bullet: ({ children }) => <li>{children}</li>,
+        number: ({ children }) => <li>{children}</li>,
+      },
       marks: {
         link: ({ children, value }) => (
           <a

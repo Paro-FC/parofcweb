@@ -191,8 +191,8 @@ export function BlogArticle({ article, relatedPosts }: BlogArticleProps) {
   }, [isBookmarked, bookmarkedKey, isHydrated]);
 
   const articleUrl = typeof window !== "undefined"
-    ? `${window.location.origin}/blog/${article.slug}`
-    : `/blog/${article.slug}`;
+    ? `${window.location.origin}/blogs/${article.slug}`
+    : `/blogs/${article.slug}`;
 
   return (
     <div className="min-h-screen bg-white">
@@ -300,7 +300,7 @@ export function BlogArticle({ article, relatedPosts }: BlogArticleProps) {
             <div className="flex items-center justify-between mb-6 md:mb-8">
               <h2 className="text-2xl font-bold text-gray-900">Related Posts</h2>
               <Link
-                href="/blog"
+                href="/blogs"
                 className="flex items-center gap-1 text-parofc-gold hover:text-bronze transition-colors font-medium"
               >
                 View all
@@ -317,7 +317,7 @@ export function BlogArticle({ article, relatedPosts }: BlogArticleProps) {
                   viewport={{ once: true }}
                   transition={{ delay: index * 0.04, duration: 0.3 }}
                 >
-                  <Link href={`/blog/${post.slug}`} className="group block cursor-pointer">
+                  <Link href={`/blogs/${post.slug}`} className="group block cursor-pointer">
                     <div className="relative aspect-[16/10] overflow-hidden bg-gray-50 mb-3">
                       {post.image ? (
                         <Image
@@ -362,7 +362,7 @@ export function BlogArticle({ article, relatedPosts }: BlogArticleProps) {
 
       {/* Floating Close Button */}
       <Link
-        href="/blog"
+        href="/blogs"
         className="fixed bottom-8 left-1/2 -translate-x-1/2 z-50 w-14 h-14 bg-gray-900 hover:bg-gray-800 text-white rounded-full shadow-2xl flex items-center justify-center transition-all hover:scale-110"
       >
         <HugeiconsIcon icon={Cancel01Icon} size={24} />

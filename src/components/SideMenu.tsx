@@ -28,7 +28,7 @@ const menuGroups = [
     label: "Content",
     items: [
       { label: "News", href: "/news" },
-      { label: "Blog", href: "/blog" },
+      { label: "Blogs", href: "/blogs" },
       { label: "Photos", href: "/photos" },
       { label: "Ebooks", href: "/ebooks" },
       { label: "TV", href: "/tv" },

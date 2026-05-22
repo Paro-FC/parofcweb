@@ -608,7 +608,7 @@ export function HomeClient({
             <div className="mb-6 flex items-center justify-between">
               <h2 className="text-base font-black uppercase">Latest Blog</h2>
               <Link
-                href="/blog"
+                href="/blogs"
                 className="text-xs font-bold uppercase tracking-wider text-parofc-red hover:underline"
               >
                 View All Posts →
@@ -622,7 +622,7 @@ export function HomeClient({
                 return (
                   <Link
                     key={item._id}
-                    href={`/blog/${item.slug}`}
+                    href={`/blogs/${item.slug}`}
                     className="group cursor-pointer overflow-hidden rounded-md border border-parofc-red/20 bg-card-dark"
                   >
                     <div className="relative aspect-[2/1] overflow-hidden">
@@ -667,7 +667,7 @@ export function HomeClient({
         <section className="mx-auto max-w-[1400px] px-5 pt-5">
           <SectionCard className="p-6">
             <div className="mb-6 flex items-center justify-between">
-              <h2 className="text-base font-black uppercase">Latest News</h2>
+              <h2 className="text-base font-black uppercase">In the News</h2>
               <Link
                 href="/news"
                 className="text-xs font-bold uppercase tracking-wider text-parofc-red hover:underline"

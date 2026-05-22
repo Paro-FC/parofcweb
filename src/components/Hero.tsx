@@ -114,7 +114,7 @@ export function Hero({ blogs }: HeroProps) {
 
       {newsItem.slug ? (
         <Link
-          href={`/blog/${newsItem.slug}`}
+          href={`/blogs/${newsItem.slug}`}
           className="absolute inset-0 flex cursor-pointer"
         >
           {content}

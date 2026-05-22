@@ -38,7 +38,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
       type: "article",
       title: article.title,
       description: article.description,
-      url: `https://parofc.com/blog/${article.slug}`,
+      url: `https://parofc.com/blogs/${article.slug}`,
       images: ogImage ? [{ url: ogImage, width: 1200, height: 630, alt: article.title }] : [],
       publishedTime: article.publishedAt,
       authors: article.author ? [article.author] : undefined,

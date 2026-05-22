@@ -25,7 +25,7 @@ const leftLinks = [
 const rightLinks = [
   { href: "/academy", label: "Academy" },
   { href: "/news", label: "News" },
-  { href: "/blog", label: "Blog" },
+  { href: "/blogs", label: "Blogs" },
 ];
 
 const moreLinks = [

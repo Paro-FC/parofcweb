@@ -26,9 +26,9 @@ const quickLinks = [
   { href: "/", label: "Home" },
   { href: "/fixtures-results", label: "Fixtures & results" },
   { href: "/about", label: "About Paro FC" },
-  { href: "/players", label: "Team" },
+  { href: "/players", label: "Squad" },
   { href: "/standings", label: "Standings" },
-  { href: "/news", label: "News" },
+  { href: "/news", label: "In the News" },
   { href: "/blogs", label: "Blogs" },
   { href: "/photos", label: "Photos" },
 ];
