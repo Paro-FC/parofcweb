@@ -24,9 +24,9 @@ interface FooterProps {
 
 const quickLinks = [
   { href: "/", label: "Home" },
-  { href: "/fixtures-results", label: "Fixtures & results" },
+  { href: "/fixtures-results", label: "Fixtures" },
   { href: "/about", label: "About Paro FC" },
-  { href: "/players", label: "Squad" },
+  { href: "/players", label: "Squads" },
   { href: "/standings", label: "Standings" },
   { href: "/news", label: "In the News" },
   { href: "/blogs", label: "Blogs" },

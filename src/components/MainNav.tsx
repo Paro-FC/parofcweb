@@ -18,13 +18,13 @@ import { SearchModal } from "./SearchModal";
 const leftLinks = [
   { href: "/standings", label: "Standings" },
   { href: "/fixtures-results", label: "Fixtures" },
-  { href: "/players", label: "Squad" },
+  { href: "/players", label: "Squads" },
   { href: "/about", label: "About Paro FC" },
 ];
 
 const rightLinks = [
   { href: "/academy", label: "Academy" },
-  { href: "/news", label: "News" },
+  { href: "/news", label: "In the News" },
   { href: "/blogs", label: "Blogs" },
 ];
 

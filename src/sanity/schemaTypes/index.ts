@@ -12,6 +12,7 @@ import { product } from "./product";
 import { category } from "./category";
 import { paymentProof } from "./paymentProof";
 import { coachingStaff } from "./coachingStaff";
+import { staffCategory } from "./staffCategory";
 import { youtubeVideo } from "./youtubeVideo";
 import { academy } from "./academy";
 import { ebook } from "./ebook";
@@ -35,6 +36,7 @@ export const schemaTypes = [
   category,
   paymentProof,
   coachingStaff,
+  staffCategory,
   youtubeVideo,
   academy,
   ebook,

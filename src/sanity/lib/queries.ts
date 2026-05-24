@@ -155,6 +155,7 @@ export const COACHING_STAFF_QUERY = `*[_type == "coachingStaff" && (team == $tea
   _id,
   name,
   role,
+  "category": category->{ _id, title, order },
   image
 }`;
 

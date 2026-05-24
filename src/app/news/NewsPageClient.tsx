@@ -1,15 +1,15 @@
 "use client";
 
+import Loader from "@/components/Loader";
+import { urlFor } from "@/sanity/lib/image";
+import { sanityFetch } from "@/sanity/lib/live";
+import { NEWS_QUERY } from "@/sanity/lib/queries";
+import { NewsIcon } from "@hugeicons/core-free-icons";
+import { HugeiconsIcon } from "@hugeicons/react";
 import { motion } from "framer-motion";
 import Image from "next/image";
 import Link from "next/link";
-import { useState, useEffect } from "react";
-import { HugeiconsIcon } from "@hugeicons/react";
-import { NewsIcon } from "@hugeicons/core-free-icons";
-import { sanityFetch } from "@/sanity/lib/live";
-import { NEWS_QUERY } from "@/sanity/lib/queries";
-import { urlFor } from "@/sanity/lib/image";
-import Loader from "@/components/Loader";
+import { useEffect, useState } from "react";
 
 interface NewsItem {
   _id: string;
@@ -144,7 +144,9 @@ export default function NewsPage() {
               >
                 <Link
                   href={item.externalUrl ?? `/news/${item.slug}`}
-                  {...(item.externalUrl ? { target: "_blank", rel: "noopener noreferrer" } : {})}
+                  {...(item.externalUrl
+                    ? { target: "_blank", rel: "noopener noreferrer" }
+                    : {})}
                   className="group block cursor-pointer"
                 >
                   <div className="relative aspect-[16/10] overflow-hidden bg-white/5 mb-3">
@@ -166,7 +168,8 @@ export default function NewsPage() {
                   </span>
 
                   <h3 className="text-base font-bold text-white leading-snug line-clamp-2 group-hover:text-parofc-red transition-colors duration-200">
-                    {item.title}{item.externalUrl && " ↗"}
+                    {item.title}
+                    {item.externalUrl && " ↗"}
                   </h3>
 
                   {item.description && (

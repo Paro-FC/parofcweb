@@ -111,10 +111,10 @@ export default function NewsPage() {
             transition={{ duration: 0.5 }}
           >
             <p className="text-xs font-bold text-parofc-gold uppercase tracking-[0.2em] mb-3">
-              Latest Updates
+              Paro FC
             </p>
             <h1 className="text-5xl md:text-6xl lg:text-7xl font-black text-white uppercase tracking-tight leading-none">
-              Paro FC <span className="text-parofc-gold">News</span>
+              In the <span className="text-parofc-gold">News</span>
             </h1>
           </motion.div>
         </div>

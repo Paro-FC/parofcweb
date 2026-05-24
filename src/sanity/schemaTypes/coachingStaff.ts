@@ -45,6 +45,13 @@ export const coachingStaff = defineType({
       validation: (rule) => rule.required(),
     }),
     defineField({
+      name: 'category',
+      title: 'Category',
+      type: 'reference',
+      to: [{ type: 'staffCategory' }],
+      description: 'Staff category for grouping (manage categories under Staff Category)',
+    }),
+    defineField({
       name: 'order',
       title: 'Display order',
       type: 'number',

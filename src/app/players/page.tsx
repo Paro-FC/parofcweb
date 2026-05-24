@@ -19,10 +19,17 @@ interface Player extends PlayerCardPlayer {
   team?: string;
 }
 
+interface StaffCategory {
+  _id: string;
+  title: string;
+  order?: number | null;
+}
+
 interface CoachingStaff {
   _id: string;
   name: string;
   role: string;
+  category?: StaffCategory | null;
   image?: unknown | null;
 }
 
@@ -226,57 +233,89 @@ export default function PlayersPage() {
                   </span>
                 </div>
               ) : (
-                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6">
-                  {coachingStaff.map((staff, index) => (
-                    <motion.div
-                      key={staff._id}
-                      initial={{ opacity: 0, y: 20 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      transition={{ delay: index * 0.04, duration: 0.3 }}
-                      className="group"
-                    >
-                      <div className="relative aspect-[3/4] overflow-hidden bg-gray-50">
-                        {staff.image ? (
-                          <Image
-                            src={urlFor(staff.image)
-                              .width(600)
-                              .height(900)
-                              .fit("max")
-                              .auto("format")
-                              .url()}
-                            alt={staff.name}
-                            fill
-                            className="object-cover object-top"
-                          />
-                        ) : (
-                          <div className="absolute inset-0 bg-gradient-to-br from-dark-charcoal to-parofc-red flex items-center justify-center">
-                            <span className="text-5xl font-black text-white/20">
-                              {staff.name
-                                .split(/\s+/)
-                                .map((n) => n[0])
-                                .join("")
-                                .slice(0, 2)
-                                .toUpperCase()}
-                            </span>
+                (() => {
+                  type GroupEntry = { category: StaffCategory | null; members: CoachingStaff[] };
+                  const groupMap = new Map<string, GroupEntry>();
+
+                  for (const staff of coachingStaff) {
+                    const key = staff.category?._id ?? "__uncategorized__";
+                    if (!groupMap.has(key)) {
+                      groupMap.set(key, { category: staff.category ?? null, members: [] });
+                    }
+                    groupMap.get(key)!.members.push(staff);
+                  }
+
+                  const groups = Array.from(groupMap.values()).sort((a, b) => {
+                    const aOrder = a.category?.order ?? 999;
+                    const bOrder = b.category?.order ?? 999;
+                    return aOrder - bOrder;
+                  });
+
+                  let globalIndex = 0;
+                  return (
+                    <div className="space-y-10">
+                      {groups.map((group) => (
+                        <div key={group.category?._id ?? "__uncategorized__"}>
+                          {group.category && (
+                          <h2 className="text-xs font-bold uppercase tracking-[0.2em] text-parofc-gold mb-5">
+                            {group.category.title}
+                          </h2>
+                          )}
+                          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6">
+                            {group.members.map((staff) => {
+                              const idx = globalIndex++;
+                              return (
+                                <motion.div
+                                  key={staff._id}
+                                  initial={{ opacity: 0, y: 20 }}
+                                  animate={{ opacity: 1, y: 0 }}
+                                  transition={{ delay: idx * 0.04, duration: 0.3 }}
+                                  className="group"
+                                >
+                                  <div className="relative aspect-[3/4] overflow-hidden bg-gray-50">
+                                    {staff.image ? (
+                                      <Image
+                                        src={urlFor(staff.image)
+                                          .width(600)
+                                          .height(900)
+                                          .fit("max")
+                                          .auto("format")
+                                          .url()}
+                                        alt={staff.name}
+                                        fill
+                                        className="object-cover object-top"
+                                      />
+                                    ) : (
+                                      <div className="absolute inset-0 bg-gradient-to-br from-dark-charcoal to-parofc-red flex items-center justify-center">
+                                        <span className="text-5xl font-black text-white/20">
+                                          {staff.name
+                                            .split(/\s+/)
+                                            .map((n) => n[0])
+                                            .join("")
+                                            .slice(0, 2)
+                                            .toUpperCase()}
+                                        </span>
+                                      </div>
+                                    )}
+                                    <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent" />
+                                    <div className="absolute bottom-0 left-0 right-0 p-4">
+                                      <p className="text-2xs font-bold text-parofc-gold uppercase tracking-widest mb-1">
+                                        {staff.role}
+                                      </p>
+                                      <p className="text-base md:text-lg font-black text-white uppercase leading-tight">
+                                        {staff.name}
+                                      </p>
+                                    </div>
+                                  </div>
+                                </motion.div>
+                              );
+                            })}
                           </div>
-                        )}
-
-                        {/* Gradient overlay */}
-                        <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent" />
-
-                        {/* Info */}
-                        <div className="absolute bottom-0 left-0 right-0 p-4">
-                          <p className="text-2xs font-bold text-parofc-gold uppercase tracking-widest mb-1">
-                            {staff.role}
-                          </p>
-                          <p className="text-base md:text-lg font-black text-white uppercase leading-tight">
-                            {staff.name}
-                          </p>
                         </div>
-                      </div>
-                    </motion.div>
-                  ))}
-                </div>
+                      ))}
+                    </div>
+                  );
+                })()
               )}
             </motion.div>
           </AnimatePresence>

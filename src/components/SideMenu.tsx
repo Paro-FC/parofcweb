@@ -19,7 +19,7 @@ const menuGroups = [
       { label: "Home", href: "/" },
       { label: "Standings", href: "/standings" },
       { label: "Fixtures & Results", href: "/fixtures-results" },
-      { label: "Players", href: "/players" },
+      { label: "Squads", href: "/players" },
       { label: "About Paro FC", href: "/about" },
       { label: "Academy", href: "/academy" },
     ],
@@ -27,7 +27,7 @@ const menuGroups = [
   {
     label: "Content",
     items: [
-      { label: "News", href: "/news" },
+      { label: "In the News", href: "/news" },
       { label: "Blogs", href: "/blogs" },
       { label: "Photos", href: "/photos" },
       { label: "Ebooks", href: "/ebooks" },
