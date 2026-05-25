@@ -238,7 +238,7 @@ export default function ProductDetailPage() {
   };
 
   const images = product
-    ? [product.image, product.hoverImage].filter(Boolean)
+    ? [product.image, product.hoverImage, ...(product.images ?? [])].filter(Boolean)
     : [];
 
   // Loading state — fullScreen centers in viewport (inline Loader sits under nav otherwise)

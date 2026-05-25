@@ -542,7 +542,7 @@ export const PRODUCT_QUERY = `*[_type == "product" && slug.current == $slug][0] 
   color,
   dimensions,
   featured,
-  images,
+  "images": images[] { _key, _type, asset, hotspot, crop },
   material,
   stock
 }`;

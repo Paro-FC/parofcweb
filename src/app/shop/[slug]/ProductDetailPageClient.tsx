@@ -163,6 +163,7 @@ export default function ProductDetailPage() {
         ]);
 
         if (productData) {
+          console.log("[ProductDetail] images from Sanity:", productData.images);
           setProduct(productData);
           const related = allProducts
             .filter(
@@ -238,7 +239,7 @@ export default function ProductDetailPage() {
   };
 
   const images = product
-    ? [product.image, product.hoverImage].filter(Boolean)
+    ? [product.image, product.hoverImage, ...(product.images ?? [])].filter(Boolean)
     : [];
 
   if (isLoading) {
