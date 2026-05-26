@@ -274,7 +274,7 @@ export function HomeClient({
   return (
     <div className="min-h-screen bg-near-black text-white">
       {/* ══════ HERO ══════ */}
-      <Hero blogs={blogs} />
+      <Hero />
 
       {/* ══════ NEXT MATCH BAR ══════ */}
       {nextMatch && (
