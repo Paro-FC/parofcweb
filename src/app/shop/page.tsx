@@ -1,8 +1,9 @@
 "use client";
 
 import Loader from "@/components/Loader";
+import { ProductCard } from "@/components/ProductCard";
+import type { ProductCardData } from "@/components/ProductCard";
 import { client } from "@/sanity/lib/client";
-import { urlFor } from "@/sanity/lib/image";
 import { CATEGORIES_QUERY, PRODUCTS_QUERY } from "@/sanity/lib/queries";
 import {
   ArrowDown01Icon,
@@ -13,10 +14,8 @@ import {
 import { HugeiconsIcon } from "@hugeicons/react";
 import type { SanityImageSource } from "@sanity/image-url";
 import { AnimatePresence, motion } from "framer-motion";
-import Image from "next/image";
-import Link from "next/link";
 import { useRouter } from "next/navigation";
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useState } from "react";
 
 interface Category {
   _id: string;
@@ -25,184 +24,10 @@ interface Category {
   image?: SanityImageSource | string;
 }
 
-interface Product {
-  _id: string;
-  name: string;
-  slug: string;
-  image: SanityImageSource | string;
-  hoverImage?: SanityImageSource | string;
-  category: Category | null;
-  price: number;
-  currency: string;
-  salePrice?: number;
-  badge?: string;
+type Product = ProductCardData & {
   sizes?: string[];
-  inStock: boolean;
   _createdAt?: string;
-}
-
-const badgeStyles: Record<string, string> = {
-  new: "bg-emerald-500 text-white",
-  exclusive: "bg-dark-charcoal text-white",
-  sale: "bg-parofc-red text-white",
-  limited: "bg-parofc-gold text-dark-charcoal",
-  bestseller: "bg-parofc-gold text-dark-charcoal",
 };
-
-const badgeLabels: Record<string, string> = {
-  new: "NEW",
-  exclusive: "EXCLUSIVE",
-  sale: "SALE",
-  limited: "LIMITED",
-  bestseller: "BEST SELLER",
-};
-
-const ProductCard = React.memo(function ProductCard({
-  product,
-  index,
-}: {
-  product: Product;
-  index: number;
-}) {
-  const [isHovered, setIsHovered] = useState(false);
-
-  const formattedPrice = useMemo(() => {
-    const price = product.salePrice || product.price;
-    if (product.currency === "BTN") {
-      return `Nu. ${price.toLocaleString()}`;
-    }
-    return `$${price.toFixed(2)}`;
-  }, [product.salePrice, product.price, product.currency]);
-
-  const originalPrice = useMemo(() => {
-    if (!product.salePrice) return null;
-    if (product.currency === "BTN") {
-      return `Nu. ${product.price.toLocaleString()}`;
-    }
-    return `$${product.price.toFixed(2)}`;
-  }, [product.salePrice, product.price, product.currency]);
-
-  const mainImageUrl = useMemo(() => {
-    if (typeof product.image === "string") return product.image;
-    try {
-      return urlFor(product.image).width(600).height(750).url();
-    } catch {
-      return "/images/placeholder-product.png";
-    }
-  }, [product.image]);
-
-  const hoverImageUrl = useMemo(() => {
-    if (!product.hoverImage) return null;
-    if (typeof product.hoverImage === "string") return product.hoverImage;
-    try {
-      return urlFor(product.hoverImage).width(600).height(750).url();
-    } catch {
-      return null;
-    }
-  }, [product.hoverImage]);
-
-  return (
-    <motion.div
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ delay: index * 0.04, duration: 0.4 }}
-      className="group"
-      onMouseEnter={() => setIsHovered(true)}
-      onMouseLeave={() => setIsHovered(false)}
-    >
-      <Link href={`/shop/${product.slug}`} className="block cursor-pointer">
-        {/* Image */}
-        <div className="relative aspect-[3/4] overflow-hidden bg-gray-50">
-          <Image
-            src={mainImageUrl}
-            alt={product.name}
-            fill
-            className={`object-cover transition-all duration-700 ${
-              isHovered && hoverImageUrl
-                ? "opacity-0 scale-105"
-                : "opacity-100 scale-100"
-            }`}
-          />
-
-          {hoverImageUrl && (
-            <Image
-              src={hoverImageUrl}
-              alt={`${product.name} - alternate view`}
-              fill
-              className={`object-cover transition-all duration-700 absolute inset-0 ${
-                isHovered ? "opacity-100 scale-100" : "opacity-0 scale-105"
-              }`}
-            />
-          )}
-
-          {/* Badge */}
-          {product.badge && (
-            <div className="absolute top-3 left-3 z-10">
-              <span
-                className={`${badgeStyles[product.badge]} text-2xs font-bold px-3 py-1 tracking-widest`}
-              >
-                {badgeLabels[product.badge]}
-              </span>
-            </div>
-          )}
-
-          {/* Sale percentage */}
-          {product.salePrice && product.price > 0 && (
-            <div className="absolute top-3 right-3 z-10">
-              <span className="bg-parofc-red text-white text-2xs font-bold px-2 py-1">
-                -
-                {Math.round(
-                  ((product.price - product.salePrice) / product.price) * 100,
-                )}
-                %
-              </span>
-            </div>
-          )}
-
-          {/* Quick view overlay */}
-          <div
-            className={`absolute inset-0 bg-dark-charcoal/0 group-hover:bg-dark-charcoal/5 transition-colors duration-300`}
-          />
-
-          {/* Out of stock overlay */}
-          {!product.inStock && (
-            <div className="absolute inset-0 bg-white/60 flex items-center justify-center">
-              <span className="bg-dark-charcoal text-white text-xs font-bold px-4 py-2 uppercase tracking-widest">
-                Sold Out
-              </span>
-            </div>
-          )}
-        </div>
-
-        {/* Info */}
-        <div className="mt-3 space-y-1">
-          {product.category?.title && (
-            <p className="text-2xs font-bold text-gray-400 tracking-widest uppercase">
-              {product.category.title}
-            </p>
-          )}
-
-          <h3 className="text-sm font-semibold text-dark-charcoal leading-snug line-clamp-2 group-hover:text-parofc-red transition-colors duration-200">
-            {product.name}
-          </h3>
-
-          <div className="flex items-baseline gap-2 pt-0.5">
-            <span
-              className={`text-sm font-bold ${product.salePrice ? "text-parofc-red" : "text-dark-charcoal"}`}
-            >
-              {formattedPrice}
-            </span>
-            {originalPrice && (
-              <span className="text-xs text-gray-400 line-through">
-                {originalPrice}
-              </span>
-            )}
-          </div>
-        </div>
-      </Link>
-    </motion.div>
-  );
-});
 
 export default function ShopPage() {
   const router = useRouter();

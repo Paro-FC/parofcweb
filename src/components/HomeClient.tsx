@@ -1,6 +1,7 @@
 "use client";
 
 import { Hero } from "@/components/Hero";
+import { ProductCard, type ProductCardData } from "@/components/ProductCard";
 import {
   LiveStandingsTable,
   sortTeamsByPoints,
@@ -143,6 +144,7 @@ interface HomeClientProps {
   youtubeVideos: YoutubeVideo[];
   standings?: StandingDoc | null;
   topScorer?: TopScorer | null;
+  products?: ProductCardData[];
 }
 
 /* ─── SMALL COMPONENTS ─── */
@@ -243,6 +245,7 @@ export function HomeClient({
   youtubeVideos,
   standings,
   topScorer,
+  products = [],
 }: HomeClientProps) {
   const nextMatch = matches?.[0];
   const countdown = useCountdown(nextMatch?.date);
@@ -780,6 +783,33 @@ export function HomeClient({
                   </a>
                 );
               })}
+            </div>
+          </SectionCard>
+        </section>
+      )}
+
+      {/* ══════ SHOP ══════ */}
+      {products.length > 0 && (
+        <section className="mx-auto max-w-[1400px] px-5 pt-5">
+          <SectionCard className="p-5">
+            <div className="mb-5 flex items-center justify-between">
+              <div>
+                <h2 className="text-xl font-black uppercase">Official Store</h2>
+                <p className="text-2xs font-bold uppercase tracking-wider text-white/40">
+                  Paro FC Merchandise
+                </p>
+              </div>
+              <Link
+                href="/shop"
+                className="rounded-lg border border-parofc-gold/30 px-4 py-2 text-2xs font-black uppercase tracking-wider text-parofc-gold transition hover:bg-parofc-gold/10"
+              >
+                View All →
+              </Link>
+            </div>
+            <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
+              {products.slice(0, 4).map((product, index) => (
+                <ProductCard key={product._id} product={product} index={index} theme="dark" />
+              ))}
             </div>
           </SectionCard>
         </section>

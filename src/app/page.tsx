@@ -9,6 +9,7 @@ import {
   YOUTUBE_VIDEOS_QUERY,
   STANDINGS_HOME_LATEST_QUERY,
   TOP_SCORER_QUERY,
+  PRODUCTS_QUERY,
 } from "@/sanity/lib/queries";
 import { HomeClient } from "@/components/HomeClient";
 
@@ -23,6 +24,7 @@ export default async function Home() {
     youtubeVideosResult,
     standingsResult,
     topScorerResult,
+    productsResult,
   ] = await Promise.all([
     sanityFetch({ query: NEWS_QUERY }).catch(() => ({ data: [] })),
     sanityFetch({ query: BLOG_QUERY }).catch(() => ({ data: [] })),
@@ -35,6 +37,7 @@ export default async function Home() {
       data: null,
     })),
     sanityFetch({ query: TOP_SCORER_QUERY }).catch(() => ({ data: null })),
+    sanityFetch({ query: PRODUCTS_QUERY }).catch(() => ({ data: [] })),
   ]);
 
   return (
@@ -48,6 +51,7 @@ export default async function Home() {
       youtubeVideos={(youtubeVideosResult.data as any) ?? []}
       standings={(standingsResult.data as any) ?? null}
       topScorer={(topScorerResult.data as any) ?? null}
+      products={(productsResult.data as any) ?? []}
     />
   );
 }
