@@ -419,6 +419,8 @@ export const SEARCH_PHOTOS_QUERY = `*[_type == "photo" && title match $searchTer
 export const ACADEMY_PLAYERS_QUERY = `*[_type == "academy"] | order(_updatedAt desc)[0]{
   _id,
   title,
+  subtitle,
+  intro[],
   youth[] {
     ...,
     _type == "image" => {
