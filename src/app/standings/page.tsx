@@ -12,13 +12,15 @@ import {
   ArrowDown01Icon,
   Award01Icon,
   Cancel01Icon,
+  Share01Icon,
   Shield01Icon,
 } from "@hugeicons/core-free-icons";
 import { HugeiconsIcon } from "@hugeicons/react";
 import { AnimatePresence, motion } from "framer-motion";
+import html2canvas from "html2canvas";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 
 interface Competition {
   id: string;
@@ -98,6 +100,95 @@ export default function StandingsPage() {
   const [teams, setTeams] = useState<Team[]>([]);
   const [seasons, setSeasons] = useState<string[]>([]);
   const [loading, setLoading] = useState(true);
+  const [sharing, setSharing] = useState(false);
+  const [showShareMenu, setShowShareMenu] = useState(false);
+  const [capturedImage, setCapturedImage] = useState<string | null>(null);
+  const [toast, setToast] = useState<string | null>(null);
+  const tableRef = useRef<HTMLDivElement>(null);
+
+  const showToast = (msg: string) => {
+    setToast(msg);
+    setTimeout(() => setToast(null), 3000);
+  };
+
+  const captureTable = async (): Promise<{ blob: Blob; dataUrl: string }> => {
+    if (!tableRef.current) throw new Error("Table not found");
+    const canvas = await html2canvas(tableRef.current, {
+      backgroundColor: "#1a1a2e",
+      scale: 2,
+      useCORS: true,
+      logging: false,
+    });
+    const dataUrl = canvas.toDataURL("image/png");
+    const blob = await new Promise<Blob>((resolve) =>
+      canvas.toBlob((b) => resolve(b!), "image/png"),
+    );
+    return { blob, dataUrl };
+  };
+
+  const handleShare = async () => {
+    setSharing(true);
+    try {
+      const { dataUrl } = await captureTable();
+      setCapturedImage(dataUrl);
+      setShowShareMenu(true);
+    } catch (err: unknown) {
+      if (err instanceof Error && err.name !== "AbortError") {
+        console.error("Share failed:", err);
+      }
+    } finally {
+      setSharing(false);
+    }
+  };
+
+  const copyImageToClipboard = async (): Promise<boolean> => {
+    if (!capturedImage) return false;
+    try {
+      const res = await fetch(capturedImage);
+      const blob = await res.blob();
+      await navigator.clipboard.write([
+        new ClipboardItem({ "image/png": blob }),
+      ]);
+      return true;
+    } catch {
+      return false;
+    }
+  };
+
+  const openPlatform = async (url: string) => {
+    const copied = await copyImageToClipboard();
+    window.open(url, "_blank", "noopener,noreferrer");
+    showToast(
+      copied
+        ? "Image copied — paste it into your post!"
+        : "Opening platform — screenshot the standings to share.",
+    );
+  };
+
+  const downloadImage = () => {
+    if (!capturedImage) return;
+    const a = document.createElement("a");
+    a.href = capturedImage;
+    a.download = `paro-fc-standings-${selectedSeason}.png`;
+    a.click();
+    showToast("Image saved!");
+  };
+
+  const shareToNative = async () => {
+    if (!capturedImage) return;
+    const res = await fetch(capturedImage);
+    const blob = await res.blob();
+    const file = new File([blob], "paro-fc-standings.png", { type: "image/png" });
+    if (navigator.canShare?.({ files: [file] })) {
+      await navigator.share({
+        files: [file],
+        title: `Paro FC Standings - ${selectedCompName} ${selectedSeason}`,
+        text: "Check out the latest standings! 🏆",
+      });
+    } else {
+      downloadImage();
+    }
+  };
 
   const liveCompetitions = useSanityLiveQuery<Competition[]>(
     STANDINGS_COMPETITIONS_QUERY,
@@ -352,7 +443,7 @@ export default function StandingsPage() {
         </div>
 
         {/* Table — dark card */}
-        <div className="rounded-lg border border-parofc-red/20 bg-card-dark p-5">
+        <div ref={tableRef} className="rounded-lg border border-parofc-red/20 bg-card-dark p-5">
           <div className="mb-4 flex items-end justify-between">
             <div>
               <h2 className="flex items-center gap-2 text-xl font-black uppercase text-white">
@@ -366,6 +457,14 @@ export default function StandingsPage() {
                 {selectedCompName} {selectedSeason}
               </p>
             </div>
+            <button
+              onClick={handleShare}
+              disabled={sharing || teams.length === 0}
+              className="flex items-center gap-2 rounded-lg bg-white/10 hover:bg-parofc-red px-4 py-2 text-xs font-bold text-white uppercase tracking-wider transition-all duration-200 disabled:opacity-40 disabled:cursor-not-allowed"
+            >
+              <HugeiconsIcon icon={Share01Icon} size={14} />
+              {sharing ? "Capturing…" : "Share"}
+            </button>
           </div>
 
           <div className="overflow-x-auto scrollbar-hide">
@@ -485,6 +584,157 @@ export default function StandingsPage() {
       >
         <HugeiconsIcon icon={Cancel01Icon} size={24} />
       </button>
+
+      {/* Share modal */}
+      <AnimatePresence>
+        {showShareMenu && capturedImage && (
+          <>
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="fixed inset-0 z-50 bg-black/75 backdrop-blur-sm"
+              onClick={() => setShowShareMenu(false)}
+            />
+            <motion.div
+              initial={{ y: "100%" }}
+              animate={{ y: 0 }}
+              exit={{ y: "100%" }}
+              transition={{ type: "spring", stiffness: 400, damping: 40 }}
+              className="fixed bottom-0 inset-x-0 z-50 rounded-t-3xl bg-[#111] pb-safe shadow-2xl md:bottom-8 md:inset-x-auto md:left-1/2 md:-translate-x-1/2 md:w-[420px] md:rounded-2xl"
+            >
+              {/* Handle */}
+              <div className="flex justify-center pt-3 pb-1 md:hidden">
+                <div className="h-1 w-10 rounded-full bg-white/20" />
+              </div>
+
+              <div className="px-5 pt-3 pb-6">
+                {/* Header */}
+                <div className="mb-4 flex items-center justify-between">
+                  <h3 className="text-sm font-black uppercase tracking-wider text-white">
+                    Share Standings
+                  </h3>
+                  <button
+                    onClick={() => setShowShareMenu(false)}
+                    className="grid h-7 w-7 place-items-center rounded-full bg-white/10 text-white/60 hover:text-white transition"
+                  >
+                    <HugeiconsIcon icon={Cancel01Icon} size={14} />
+                  </button>
+                </div>
+
+                {/* Preview */}
+                <img
+                  src={capturedImage}
+                  alt="Standings preview"
+                  className="mb-4 w-full rounded-xl object-cover ring-1 ring-white/10"
+                />
+
+                {/* Toast */}
+                <AnimatePresence>
+                  {toast && (
+                    <motion.div
+                      initial={{ opacity: 0, y: -8 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: -8 }}
+                      className="mb-3 rounded-xl bg-green-500/20 border border-green-500/30 px-4 py-2.5 text-center text-xs font-bold text-green-400"
+                    >
+                      {toast}
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+
+                <p className="mb-3 text-center text-2xs font-bold uppercase tracking-wider text-white/30">
+                  Image is copied to clipboard — just paste when posting
+                </p>
+
+                {/* Platform grid */}
+                {(() => {
+                  const siteUrl = "https://parofc.bt/standings";
+                  const shareText = `🏆 Paro FC Standings — ${selectedCompName} ${selectedSeason}`;
+                  const platforms = [
+                    {
+                      label: "Facebook",
+                      color: "bg-[#1877F2]",
+                      url: `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(siteUrl)}&quote=${encodeURIComponent(shareText)}`,
+                      icon: (
+                        <svg viewBox="0 0 24 24" className="h-5 w-5 fill-white">
+                          <path d="M24 12.073C24 5.405 18.627 0 12 0S0 5.405 0 12.073C0 18.1 4.388 23.094 10.125 24v-8.437H7.078v-3.49h3.047V9.41c0-3.025 1.792-4.697 4.533-4.697 1.312 0 2.686.235 2.686.235v2.97h-1.513c-1.491 0-1.956.93-1.956 1.886v2.254h3.328l-.532 3.49h-2.796V24C19.612 23.094 24 18.1 24 12.073z" />
+                        </svg>
+                      ),
+                    },
+                    {
+                      label: "Twitter",
+                      color: "bg-black ring-1 ring-white/20",
+                      url: `https://twitter.com/intent/tweet?text=${encodeURIComponent(shareText)}&url=${encodeURIComponent(siteUrl)}`,
+                      icon: (
+                        <svg viewBox="0 0 24 24" className="h-5 w-5 fill-white">
+                          <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-4.714-6.231-5.401 6.231H2.746l7.73-8.835L1.254 2.25H8.08l4.258 5.63 5.906-5.63zm-1.161 17.52h1.833L7.084 4.126H5.117z" />
+                        </svg>
+                      ),
+                    },
+                    {
+                      label: "WhatsApp",
+                      color: "bg-[#25D366]",
+                      url: `https://wa.me/?text=${encodeURIComponent(`${shareText}\n${siteUrl}`)}`,
+                      icon: (
+                        <svg viewBox="0 0 24 24" className="h-5 w-5 fill-white">
+                          <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z" />
+                        </svg>
+                      ),
+                    },
+                    {
+                      label: "LinkedIn",
+                      color: "bg-[#0A66C2]",
+                      url: `https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(siteUrl)}&title=${encodeURIComponent(shareText)}&summary=${encodeURIComponent(`Check out the latest ${selectedCompName} standings on Paro FC!`)}`,
+                      icon: (
+                        <svg viewBox="0 0 24 24" className="h-5 w-5 fill-white">
+                          <path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433a2.062 2.062 0 01-2.063-2.065 2.064 2.064 0 112.063 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z" />
+                        </svg>
+                      ),
+                    },
+                  ];
+                  return (
+                    <div className="grid grid-cols-4 gap-3 mb-3">
+                      {platforms.map((p) => (
+                        <button
+                          key={p.label}
+                          onClick={() => openPlatform(p.url)}
+                          className="flex flex-col items-center gap-2 rounded-2xl bg-white/5 hover:bg-white/10 py-4 transition active:scale-95"
+                        >
+                          <div className={`grid h-10 w-10 place-items-center rounded-full ${p.color}`}>
+                            {p.icon}
+                          </div>
+                          <span className="text-2xs font-bold text-white/70">{p.label}</span>
+                        </button>
+                      ))}
+                    </div>
+                  );
+                })()}
+
+                {/* Download */}
+                <button
+                  onClick={downloadImage}
+                  className="flex w-full items-center justify-center gap-2 rounded-xl bg-white/5 hover:bg-white/10 py-3 text-xs font-bold text-white/60 uppercase tracking-wider transition mb-3"
+                >
+                  <svg viewBox="0 0 24 24" className="h-4 w-4 fill-current">
+                    <path d="M12 16l-5-5h3V4h4v7h3l-5 5zm-7 2h14v2H5v-2z" />
+                  </svg>
+                  Download Image
+                </button>
+
+                {/* Native share (mobile) */}
+                <button
+                  onClick={shareToNative}
+                  className="flex w-full items-center justify-center gap-2 rounded-xl bg-white/10 hover:bg-white/15 py-3 text-xs font-bold text-white/70 uppercase tracking-wider transition"
+                >
+                  <HugeiconsIcon icon={Share01Icon} size={14} />
+                  More options…
+                </button>
+              </div>
+            </motion.div>
+          </>
+        )}
+      </AnimatePresence>
     </div>
   );
 }
