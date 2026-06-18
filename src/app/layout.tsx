@@ -2,7 +2,7 @@ import { ChatbotScript } from "@/components/ChatbotScript";
 import { ConditionalLayout } from "@/components/ConditionalLayout";
 import { sanityFetch } from "@/sanity/lib/live";
 import { SanityLive } from "@/sanity/lib/live-client";
-import { PARTNERS_QUERY } from "@/sanity/lib/queries";
+import { PARTNERS_QUERY, NEXT_MATCH_TICKET_QUERY } from "@/sanity/lib/queries";
 import { SpeedInsights } from "@vercel/speed-insights/next";
 import type { Metadata } from "next";
 import { unstable_cache } from "next/cache";
@@ -17,6 +17,17 @@ const getCachedPartners = unstable_cache(
     return (partnersResult.data as unknown[]) || [];
   },
   ["layout-partners"],
+  { revalidate: 120 },
+);
+
+const getCachedNextMatchTicketUrl = unstable_cache(
+  async () => {
+    const result = await sanityFetch({ query: NEXT_MATCH_TICKET_QUERY }).catch(
+      () => ({ data: null }),
+    );
+    return (result.data as { ticketUrl?: string } | null)?.ticketUrl || null;
+  },
+  ["layout-next-match-ticket"],
   { revalidate: 120 },
 );
 
@@ -38,12 +49,13 @@ export default async function RootLayout({
   children: React.ReactNode;
 }) {
   const partners = await getCachedPartners();
+  const nextMatchTicketUrl = await getCachedNextMatchTicketUrl();
 
   return (
     <html lang="en" suppressHydrationWarning>
       <head />
       <body className="bg-near-black">
-        <ConditionalLayout partners={partners as any}>
+        <ConditionalLayout partners={partners as any} nextMatchTicketUrl={nextMatchTicketUrl}>
           {children}
         </ConditionalLayout>
         <SanityLive />

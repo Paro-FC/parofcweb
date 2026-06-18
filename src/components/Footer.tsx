@@ -20,6 +20,7 @@ interface Partner {
 
 interface FooterProps {
   partners?: Partner[];
+  nextMatchTicketUrl?: string | null;
 }
 
 const quickLinks = [
@@ -65,7 +66,7 @@ const socialLinks = [
   },
 ];
 
-export function Footer(_: FooterProps) {
+export function Footer({ nextMatchTicketUrl }: FooterProps) {
   return (
     <footer className="border-t border-parofc-red/15 bg-near-black">
       {/* Footer columns */}
@@ -161,7 +162,7 @@ export function Footer(_: FooterProps) {
           </b>
           <div className="mt-3 space-y-2 text-xs text-white/40">
             <p>info@parofc.bt</p>
-            <p>+975 7728 0000</p>
+            <p>+975-16180205</p>
             <p>
               Woochu Sports Arena,
               <br />
@@ -179,7 +180,9 @@ export function Footer(_: FooterProps) {
             Get your match tickets and cheer for Paro FC live at the stadium.
           </p>
           <Link
-            href="/fixtures-results"
+            href={nextMatchTicketUrl || "/fixtures-results"}
+            target={nextMatchTicketUrl ? "_blank" : undefined}
+            rel={nextMatchTicketUrl ? "noopener noreferrer" : undefined}
             className="mt-4 flex items-center justify-center gap-2 w-full rounded-lg bg-parofc-red py-2.5 text-2xs font-black uppercase tracking-wider text-white transition hover:bg-parofc-red/85"
           >
             <svg

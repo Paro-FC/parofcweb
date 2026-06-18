@@ -159,6 +159,11 @@ export const COACHING_STAFF_QUERY = `*[_type == "coachingStaff" && (team == $tea
   image
 }`;
 
+// Next match ticket URL — for footer Buy Tickets button
+export const NEXT_MATCH_TICKET_QUERY = `*[_type == "match" && date >= now() && hideMatch != true && competition->team == "men"] | order(date asc) [0] {
+  ticketUrl
+}`;
+
 // Matches queries — only upcoming/live men's matches (date >= now)
 export const MATCHES_QUERY = `*[_type == "match" && date >= now() && hideMatch != true && competition->team == "men"] | order(date asc) [0...3] {
   _id,

@@ -6,11 +6,13 @@ import { LayoutWrapper } from "./LayoutWrapper";
 interface ConditionalLayoutProps {
   children: React.ReactNode;
   partners?: any[];
+  nextMatchTicketUrl?: string | null;
 }
 
 export function ConditionalLayout({
   children,
   partners = [],
+  nextMatchTicketUrl,
 }: ConditionalLayoutProps) {
   const pathname = usePathname();
   const isStudio = pathname?.startsWith("/studio");
@@ -20,6 +22,6 @@ export function ConditionalLayout({
   }
 
   return (
-    <LayoutWrapper partners={partners}>{children}</LayoutWrapper>
+    <LayoutWrapper partners={partners} nextMatchTicketUrl={nextMatchTicketUrl}>{children}</LayoutWrapper>
   );
 }
