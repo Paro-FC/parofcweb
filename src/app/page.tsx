@@ -50,7 +50,8 @@ export default async function Home() {
       trophies={(trophiesResult.data as any) ?? []}
       youtubeVideos={(youtubeVideosResult.data as any) ?? []}
       standings={(standingsResult.data as any) ?? null}
-      topScorer={(topScorerResult.data as any) ?? null}
+      topScorers={(topScorerResult.data as any) ?? []}
+      topScorer={(topScorerResult.data as any)?.[0] ?? null}
       products={(productsResult.data as any) ?? []}
     />
   );

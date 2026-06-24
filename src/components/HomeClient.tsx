@@ -144,6 +144,7 @@ interface HomeClientProps {
   youtubeVideos: YoutubeVideo[];
   standings?: StandingDoc | null;
   topScorer?: TopScorer | null;
+  topScorers?: TopScorer[];
   products?: ProductCardData[];
 }
 
@@ -245,6 +246,7 @@ export function HomeClient({
   youtubeVideos,
   standings,
   topScorer,
+  topScorers = [],
   products = [],
 }: HomeClientProps) {
   const nextMatch = matches?.[0];
@@ -568,36 +570,79 @@ export function HomeClient({
             </div>
           </SectionCard>
 
-          {/* Top Scorer */}
-          {topScorer && (
-            <SectionCard className="relative overflow-hidden">
-              {topScorer.image && (
-                <div className="absolute right-0 top-0 h-full w-[45%] sm:w-1/2">
-                  <Image
-                    src={topScorer.image}
-                    alt={topScorer.name}
-                    fill
-                    className="object-cover object-top"
-                  />
-                  <div className="absolute inset-0 bg-gradient-to-r from-card-dark via-card-dark/80 to-transparent" />
-                </div>
-              )}
-              <div className="relative z-10 p-5">
-                <h3 className="mb-4 text-base font-black uppercase tracking-wider">
-                  Top Scorer of Paro FC
+          {/* Top Scorers */}
+          {topScorers.length > 0 && (
+            <SectionCard className="p-4">
+              <div className="mb-3 flex items-center justify-between">
+                <h3 className="text-sm font-black uppercase tracking-wider">
+                  Top Scorers of Paro FC
                 </h3>
-                <div className="flex flex-wrap items-baseline gap-2">
-                  <span className="text-5xl font-black text-parofc-red sm:text-6xl">
-                    {topScorer.goals}
-                  </span>
-                  <div className="h-11 w-px bg-gradient-to-b from-transparent via-parofc-red/40 to-transparent" />
-                  <span className="text-base font-bold uppercase text-white/50">
-                    Goals
-                  </span>
-                </div>
-                <h4 className="mt-4 text-lg font-black uppercase sm:text-xl">
-                  {topScorer.name}
-                </h4>
+                <Link
+                  href="/top-scorers"
+                  className="text-xs font-bold uppercase tracking-wider text-parofc-red hover:underline"
+                >
+                  See More →
+                </Link>
+              </div>
+              <div className="space-y-2">
+                {topScorers.map((scorer, idx) => {
+                  const rankColors = [
+                    "text-parofc-gold",
+                    "text-white/60",
+                    "text-amber-600",
+                  ];
+                  return (
+                    <div
+                      key={scorer._id}
+                      className={`flex items-center gap-3 rounded-md border px-3 py-2.5 ${idx === 0 ? "border-parofc-red/30 bg-gradient-to-r from-parofc-red/10 to-transparent" : "border-white/10"}`}
+                    >
+                      <span
+                        className={`w-5 shrink-0 text-lg font-black ${rankColors[idx] ?? "text-white/30"}`}
+                      >
+                        {idx + 1}
+                      </span>
+                      {scorer.image ? (
+                        <div className="h-9 w-9 shrink-0 overflow-hidden rounded-full">
+                          <Image
+                            src={scorer.image}
+                            alt={scorer.name}
+                            width={36}
+                            height={36}
+                            className="h-full w-full object-cover object-top"
+                          />
+                        </div>
+                      ) : (
+                        <div className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-white/5 ring-1 ring-white/10">
+                          <span className="text-3xs font-black uppercase text-white/40">
+                            {scorer.name
+                              .split(" ")
+                              .map((w) => w[0])
+                              .join("")
+                              .slice(0, 2)}
+                          </span>
+                        </div>
+                      )}
+                      <div className="min-w-0 flex-1">
+                        <p className="truncate text-xs font-black uppercase">
+                          {scorer.name}
+                        </p>
+                        <p className="text-2xs font-bold uppercase tracking-wider text-white/40">
+                          {scorer.club}
+                        </p>
+                      </div>
+                      <div className="flex items-baseline gap-1 shrink-0">
+                        <span
+                          className={`text-xl font-black ${idx === 0 ? "text-parofc-red" : "text-white"}`}
+                        >
+                          {scorer.goals}
+                        </span>
+                        <span className="text-2xs font-bold uppercase text-white/40">
+                          G
+                        </span>
+                      </div>
+                    </div>
+                  );
+                })}
               </div>
             </SectionCard>
           )}

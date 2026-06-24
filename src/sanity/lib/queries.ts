@@ -451,8 +451,17 @@ export const EBOOKS_QUERY = `*[_type == "ebook"] | order(_createdAt desc) {
 }`
 
 
-// Top Scorer (highest goals first)
-export const TOP_SCORER_QUERY = `*[_type == "topScorer"] | order(goals desc)[0] {
+// Top 3 Scorers for home sidebar
+export const TOP_SCORER_QUERY = `*[_type == "topScorer"] | order(goals desc)[0..2] {
+  _id,
+  name,
+  "image": image.asset->url,
+  goals,
+  club
+}`
+
+// All Top Scorers for dedicated page
+export const ALL_TOP_SCORERS_QUERY = `*[_type == "topScorer"] | order(goals desc) {
   _id,
   name,
   "image": image.asset->url,
