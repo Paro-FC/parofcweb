@@ -88,6 +88,7 @@ interface Partner {
   logo: string;
   url: string;
   category?: string;
+  order?: number | null;
 }
 
 interface TrophyItem {
@@ -254,6 +255,12 @@ export function HomeClient({
   const topNews = news?.slice(0, 3) ?? [];
   const topBlogs = blogs?.slice(0, 3) ?? [];
   const topVideos = youtubeVideos?.slice(0, 5) ?? [];
+  const sortedMainPartners = [...mainPartners].sort(
+    (a, b) => (a.order ?? 9999) - (b.order ?? 9999),
+  );
+  const sortedSubPartners = [...subPartners].sort(
+    (a, b) => (a.order ?? 9999) - (b.order ?? 9999),
+  );
   const liveStandings = useSanityLiveQuery<StandingDoc | null>(
     STANDINGS_HOME_LATEST_QUERY,
     {},
@@ -868,7 +875,7 @@ export function HomeClient({
               Our Partners
             </h2>
             <div className="grid grid-cols-2 gap-4 md:grid-cols-5">
-              {mainPartners.map((p) => (
+              {sortedMainPartners.map((p) => (
                 <a
                   key={p._id}
                   href={p.url}
@@ -906,7 +913,7 @@ export function HomeClient({
               Sub Partners
             </h2>
             <div className="grid grid-cols-2 gap-4 md:grid-cols-5">
-              {subPartners.map((p) => (
+              {sortedSubPartners.map((p) => (
                 <a
                   key={p._id}
                   href={p.url}

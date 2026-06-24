@@ -262,7 +262,8 @@ export const PARTNERS_QUERY = `*[_type == "partner" && isActive == true] | order
   name,
   "logo": logo.asset->url,
   url,
-  category
+  category,
+  order
 }`;
 
 // Main partners query (for homepage)
@@ -271,7 +272,8 @@ export const MAIN_PARTNERS_QUERY = `*[_type == "partner" && isActive == true && 
   name,
   "logo": logo.asset->url,
   url,
-  category
+  category,
+  order
 }`;
 
 // Sub partners query (for homepage)
@@ -280,7 +282,8 @@ export const SUB_PARTNERS_QUERY = `*[_type == "partner" && isActive == true && c
   name,
   "logo": logo.asset->url,
   url,
-  category
+  category,
+  order
 }`;
 
 // Standings queries
