@@ -760,7 +760,7 @@ export function HomeClient({
       {products.length > 0 && (
         <section className="mx-auto max-w-[1400px] px-5 pt-5">
           <div className="rounded-lg border border-parofc-red/20 bg-card-dark overflow-hidden">
-            <div className="flex items-end justify-between border-b border-parofc-red/20 px-5 py-4">
+            <div className="flex flex-col gap-3 border-b border-parofc-red/20 px-5 py-4 sm:flex-row sm:items-end sm:justify-between">
               <div className="flex items-center gap-3">
                 <div className="h-6 w-[3px] bg-parofc-gold" />
                 <div>
@@ -770,7 +770,7 @@ export function HomeClient({
               </div>
               <Link
                 href="/shop"
-                className="flex items-center gap-2 bg-parofc-gold px-4 py-2 text-[10px] font-black uppercase tracking-[0.18em] text-dark-charcoal transition hover:bg-parofc-gold/80 active:scale-[0.98]"
+                className="flex w-fit items-center gap-2 bg-parofc-gold px-4 py-2 text-[10px] font-black uppercase tracking-[0.18em] text-dark-charcoal transition hover:bg-parofc-gold/80 active:scale-[0.98]"
               >
                 View All
                 <HugeiconsIcon icon={ArrowUpRight01Icon} size={12} strokeWidth={2.5} />
