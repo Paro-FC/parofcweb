@@ -8,10 +8,9 @@ module.exports = {
   theme: {
     extend: {
       fontFamily: {
-        sans: ["Inter", "system-ui", "sans-serif"],
-        serif: ["Satoshi", "system-ui", "sans-serif"],
-        display: ["Inter", "system-ui", "sans-serif"],
-        heading: ["Satoshi", "system-ui", "sans-serif"],
+        sans: ["var(--font-hanken)", "system-ui", "sans-serif"],
+        display: ["var(--font-hanken)", "system-ui", "sans-serif"],
+        heading: ["var(--font-hanken)", "system-ui", "sans-serif"],
       },
       fontSize: {
         "5xs": ["7px", { lineHeight: "1.2", letterSpacing: "0.06em" }],

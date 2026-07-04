@@ -2,15 +2,13 @@
 
 import Loader from "@/components/Loader";
 import { urlFor } from "@/sanity/lib/image";
-import { sanityFetch } from "@/sanity/lib/live";
+import { useSanityLiveQuery } from "@/sanity/lib/live-client";
 import { BLOG_QUERY } from "@/sanity/lib/queries";
-import { Cancel01Icon, NewsIcon } from "@hugeicons/core-free-icons";
+import { NewsIcon } from "@hugeicons/core-free-icons";
 import { HugeiconsIcon } from "@hugeicons/react";
 import { motion } from "framer-motion";
 import Image from "next/image";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
 
 interface BlogItem {
   _id: string;
@@ -37,36 +35,11 @@ function formatDate(dateString: string) {
 }
 
 export default function BlogPage() {
-  const router = useRouter();
-  const [blogItems, setBlogItems] = useState<BlogItem[]>([]);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    const fetchBlogs = async () => {
-      setLoading(true);
-      try {
-        const result = await sanityFetch({ query: BLOG_QUERY }).catch(() => ({
-          data: [],
-        }));
-        if (
-          result.data &&
-          Array.isArray(result.data) &&
-          result.data.length > 0
-        ) {
-          setBlogItems(result.data as BlogItem[]);
-        }
-      } catch (error) {
-        console.error("Error fetching blog posts:", error);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchBlogs();
-  }, []);
-
-  const featured = blogItems[0];
-  const rest = blogItems.slice(1);
+  const blogItems = useSanityLiveQuery<BlogItem[] | null>(BLOG_QUERY, {}, null);
+  const loading = blogItems === null;
+  const items = blogItems ?? [];
+  const featured = items[0];
+  const rest = items.slice(1);
 
   return (
     <div className="min-h-screen bg-white">
@@ -100,7 +73,7 @@ export default function BlogPage() {
       <div className="container mx-auto px-4 py-8 md:py-12">
         {loading ? (
           <Loader />
-        ) : blogItems.length === 0 ? (
+        ) : items.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-24">
             <HugeiconsIcon
               icon={NewsIcon}
@@ -220,13 +193,6 @@ export default function BlogPage() {
           </div>
         )}
       </div>
-      {/* Floating close button */}
-      <button
-        onClick={() => router.push("/")}
-        className="fixed bottom-8 left-1/2 -translate-x-1/2 z-50 w-14 h-14 bg-gray-900 hover:bg-gray-800 text-white rounded-full shadow-2xl flex items-center justify-center transition-all hover:scale-110"
-      >
-        <HugeiconsIcon icon={Cancel01Icon} size={24} />
-      </button>
     </div>
   );
 }

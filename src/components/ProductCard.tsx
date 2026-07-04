@@ -82,7 +82,8 @@ export const ProductCard = React.memo(function ProductCard({
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      viewport={{ once: true, margin: "-40px" }}
       transition={{ delay: index * 0.04, duration: 0.4 }}
       className="group"
       onMouseEnter={() => setIsHovered(true)}
@@ -90,7 +91,7 @@ export const ProductCard = React.memo(function ProductCard({
     >
       <Link href={`/shop/${product.slug}`} className="block cursor-pointer">
         {/* Image */}
-        <div className="relative aspect-[3/4] overflow-hidden bg-gray-50">
+        <div className={`relative aspect-[3/4] overflow-hidden ${theme === "dark" ? "bg-white/5" : "bg-gray-50"}`}>
           <Image
             src={mainImageUrl}
             alt={product.name}
@@ -129,11 +130,18 @@ export const ProductCard = React.memo(function ProductCard({
             </div>
           )}
 
-          <div className="absolute inset-0 bg-dark-charcoal/0 group-hover:bg-dark-charcoal/5 transition-colors duration-300" />
+          {/* Hover action pill */}
+          {product.inStock && (
+            <div className="absolute bottom-0 left-0 right-0 translate-y-full group-hover:translate-y-0 transition-transform duration-300 z-10">
+              <div className={`py-2.5 text-center text-2xs font-black uppercase tracking-widest ${theme === "dark" ? "bg-parofc-red text-white" : "bg-dark-charcoal text-white"}`}>
+                View Product
+              </div>
+            </div>
+          )}
 
           {!product.inStock && (
-            <div className="absolute inset-0 bg-white/60 flex items-center justify-center">
-              <span className="bg-dark-charcoal text-white text-xs font-bold px-4 py-2 uppercase tracking-widest">
+            <div className="absolute inset-0 bg-black/60 flex items-center justify-center">
+              <span className="bg-white text-dark-charcoal text-xs font-black px-4 py-2 uppercase tracking-widest">
                 Sold Out
               </span>
             </div>
@@ -147,7 +155,7 @@ export const ProductCard = React.memo(function ProductCard({
               {product.category.title}
             </p>
           )}
-          <h3 className={`text-sm font-semibold leading-snug line-clamp-2 group-hover:text-parofc-red transition-colors duration-200 ${theme === "dark" ? "text-white" : "text-dark-charcoal"}`}>
+          <h3 className={`text-sm font-bold leading-snug line-clamp-2 group-hover:text-parofc-red transition-colors duration-200 ${theme === "dark" ? "text-white" : "text-dark-charcoal"}`}>
             {product.name}
           </h3>
           <div className="flex items-baseline gap-2 pt-0.5">

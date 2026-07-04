@@ -2,15 +2,13 @@
 
 import Loader from "@/components/Loader";
 import { urlFor } from "@/sanity/lib/image";
-import { sanityFetch } from "@/sanity/lib/live";
+import { useSanityLiveQuery } from "@/sanity/lib/live-client";
 import { NEWS_QUERY } from "@/sanity/lib/queries";
-import { Cancel01Icon, NewsIcon } from "@hugeicons/core-free-icons";
+import { NewsIcon } from "@hugeicons/core-free-icons";
 import { HugeiconsIcon } from "@hugeicons/react";
 import { motion } from "framer-motion";
 import Image from "next/image";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
 
 interface NewsItem {
   _id: string;
@@ -58,37 +56,9 @@ function formatDate(dateString: string) {
 }
 
 export default function NewsPage() {
-  const router = useRouter();
-  const [newsItems, setNewsItems] = useState<NewsItem[]>(fallbackNews);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    const fetchNews = async () => {
-      setLoading(true);
-      try {
-        const newsResult = await sanityFetch({ query: NEWS_QUERY }).catch(
-          () => ({ data: [] }),
-        );
-        if (
-          newsResult.data &&
-          Array.isArray(newsResult.data) &&
-          newsResult.data.length > 0
-        ) {
-          setNewsItems(newsResult.data as NewsItem[]);
-        } else {
-          setNewsItems(fallbackNews);
-        }
-      } catch (error) {
-        console.error("Error fetching news:", error);
-        setNewsItems(fallbackNews);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchNews();
-  }, []);
-
+  const newsData = useSanityLiveQuery<NewsItem[] | null>(NEWS_QUERY, {}, null);
+  const loading = newsData === null;
+  const newsItems = newsData ?? fallbackNews;
   const featured = newsItems[0];
   const rest = newsItems.slice(1);
 
@@ -269,13 +239,6 @@ export default function NewsPage() {
           </div>
         )}
       </div>
-      {/* Floating close button */}
-      <button
-        onClick={() => router.push("/")}
-        className="fixed bottom-8 left-1/2 -translate-x-1/2 z-50 w-14 h-14 bg-gray-900 hover:bg-gray-800 text-white rounded-full shadow-2xl flex items-center justify-center transition-all hover:scale-110"
-      >
-        <HugeiconsIcon icon={Cancel01Icon} size={24} />
-      </button>
     </div>
   );
 }

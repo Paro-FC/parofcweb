@@ -1,14 +1,12 @@
 "use client";
 
 import Loader from "@/components/Loader";
-import { sanityFetch } from "@/sanity/lib/live";
+import { useSanityLiveQuery } from "@/sanity/lib/live-client";
 import { ALL_TOP_SCORERS_QUERY } from "@/sanity/lib/queries";
-import { Award01Icon, Cancel01Icon } from "@hugeicons/core-free-icons";
+import { Award01Icon } from "@hugeicons/core-free-icons";
 import { HugeiconsIcon } from "@hugeicons/react";
 import { motion } from "framer-motion";
 import Image from "next/image";
-import { useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
 
 interface TopScorer {
   _id: string;
@@ -18,26 +16,27 @@ interface TopScorer {
   club: string;
 }
 
+const rankColors = ["text-parofc-gold", "text-white/60", "text-amber-600"];
+const medalBg = [
+  "border-parofc-gold/30 bg-gradient-to-r from-parofc-gold/10 to-transparent",
+  "border-white/20 bg-gradient-to-r from-white/5 to-transparent",
+  "border-amber-700/30 bg-gradient-to-r from-amber-900/10 to-transparent",
+];
+
+function TeamInitialsLogo({ name, size = "md" }: { name: string; size?: "sm" | "md" }) {
+  const initials = name.split(" ").filter(Boolean).map((w) => w[0]).join("").slice(0, 2).toUpperCase();
+  const dim = size === "md" ? "h-11 w-11" : "h-9 w-9";
+  return (
+    <div className={`grid ${dim} shrink-0 place-items-center rounded-full bg-white/5 ring-1 ring-white/10`}>
+      <span className="text-xs font-black uppercase text-white/40">{initials || "—"}</span>
+    </div>
+  );
+}
+
 export default function TopScorersPage() {
-  const router = useRouter();
-  const [scorers, setScorers] = useState<TopScorer[]>([]);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    sanityFetch<TopScorer[]>({ query: ALL_TOP_SCORERS_QUERY })
-      .then((result) => {
-        setScorers((result.data as TopScorer[]) ?? []);
-      })
-      .catch(() => setScorers([]))
-      .finally(() => setLoading(false));
-  }, []);
-
-  const rankColors = ["text-parofc-gold", "text-white/60", "text-amber-600"];
-  const medalBg = [
-    "border-parofc-gold/30 bg-gradient-to-r from-parofc-gold/10 to-transparent",
-    "border-white/20 bg-gradient-to-r from-white/5 to-transparent",
-    "border-amber-700/30 bg-gradient-to-r from-amber-900/10 to-transparent",
-  ];
+  const scorers = useSanityLiveQuery<TopScorer[] | null>(ALL_TOP_SCORERS_QUERY, {}, null);
+  const loading = scorers === null;
+  const scorerList = scorers ?? [];
 
   return (
     <div className="min-h-screen bg-white">
@@ -74,7 +73,7 @@ export default function TopScorersPage() {
       <div className="container mx-auto px-4 py-8 md:py-12 pb-28">
         {loading ? (
           <Loader />
-        ) : scorers.length === 0 ? (
+        ) : scorerList.length === 0 ? (
           <div className="flex flex-col items-center gap-3 py-20">
             <HugeiconsIcon
               icon={Award01Icon}
@@ -91,7 +90,7 @@ export default function TopScorersPage() {
               All Top Scorers
             </h2>
             <div className="space-y-2">
-              {scorers.map((scorer, idx) => (
+              {scorerList.map((scorer, idx) => (
                 <motion.div
                   key={scorer._id}
                   initial={{ opacity: 0, y: 8 }}
@@ -117,15 +116,7 @@ export default function TopScorersPage() {
                       />
                     </div>
                   ) : (
-                    <div className="grid h-11 w-11 shrink-0 place-items-center rounded-full bg-white/5 ring-1 ring-white/10">
-                      <span className="text-xs font-black uppercase text-white/40">
-                        {scorer.name
-                          .split(" ")
-                          .map((w) => w[0])
-                          .join("")
-                          .slice(0, 2)}
-                      </span>
-                    </div>
+                    <TeamInitialsLogo name={scorer.name} />
                   )}
                   <div className="min-w-0 flex-1">
                     <p className="truncate text-sm font-black uppercase text-white">
@@ -137,7 +128,7 @@ export default function TopScorersPage() {
                   </div>
                   <div className="flex items-baseline gap-1.5 shrink-0">
                     <span
-                      className={`text-2xl font-black ${idx === 0 ? "text-parofc-red" : "text-white"}`}
+                      className={`text-sm font-black ${idx === 0 ? "text-parofc-red" : "text-white"}`}
                     >
                       {scorer.goals}
                     </span>
@@ -151,14 +142,6 @@ export default function TopScorersPage() {
           </div>
         )}
       </div>
-
-      {/* Floating close button */}
-      <button
-        onClick={() => router.push("/")}
-        className="fixed bottom-8 left-1/2 -translate-x-1/2 z-50 w-14 h-14 bg-gray-900 hover:bg-gray-800 text-white rounded-full shadow-2xl flex items-center justify-center transition-all hover:scale-110"
-      >
-        <HugeiconsIcon icon={Cancel01Icon} size={24} />
-      </button>
     </div>
   );
 }

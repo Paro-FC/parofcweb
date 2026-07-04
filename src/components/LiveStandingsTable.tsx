@@ -16,6 +16,12 @@ export interface StandingTeam {
   form?: string[] | null;
 }
 
+export interface StandingsZones {
+  championsLeague?: number;  // top N positions get green bar
+  playoff?: number;           // position gets orange bar
+  relegation?: number;        // position >= this gets red bar
+}
+
 export function sortTeamsByPoints(teams: StandingTeam[]): StandingTeam[] {
   return teams
     .slice()
@@ -32,17 +38,28 @@ function formatGD(gd: number) {
   return gd > 0 ? `+${gd}` : `${gd}`;
 }
 
-function ZoneBar({ position }: { position: number }) {
-  if (position === 1) return <div className="absolute left-0 top-0 h-full w-[3px] bg-green-500" />;
-  if (position === 8) return <div className="absolute left-0 top-0 h-full w-[3px] bg-orange-400" />;
-  if (position >= 9) return <div className="absolute left-0 top-0 h-full w-[3px] bg-red-500" />;
+function gdColor(gd: number) {
+  if (gd > 0) return "text-green-400";
+  if (gd < 0) return "text-red-400";
+  return "text-white/70";
+}
+
+const DEFAULT_ZONES: StandingsZones = { championsLeague: 1, playoff: 8, relegation: 9 };
+
+function ZoneBar({ position, zones = DEFAULT_ZONES }: { position: number; zones?: StandingsZones }) {
+  if (zones.championsLeague && position <= zones.championsLeague)
+    return <div className="absolute left-0 top-0 h-full w-[3px] bg-green-500" />;
+  if (zones.playoff && position === zones.playoff)
+    return <div className="absolute left-0 top-0 h-full w-[3px] bg-orange-400" />;
+  if (zones.relegation && position >= zones.relegation)
+    return <div className="absolute left-0 top-0 h-full w-[3px] bg-red-500" />;
   return null;
 }
 
-function FormBadge({ v }: { v: string }) {
+function FormBadge({ v, className }: { v: string; className?: string }) {
   const c = v === "W" ? "bg-green-500" : v === "D" ? "bg-yellow-500" : "bg-red-600";
   return (
-    <span className={`grid h-[18px] w-[18px] place-items-center rounded-[4px] text-3xs font-black text-white ${c}`}>
+    <span className={`grid h-[18px] w-[18px] place-items-center rounded-[4px] text-3xs font-black text-white ${c} ${className ?? ""}`}>
       {v}
     </span>
   );
@@ -57,11 +74,29 @@ function TeamInitialsLogo({ name }: { name: string }) {
   );
 }
 
-interface Props {
-  teams: StandingTeam[];
+const PARO_NAMES = ["paro fc", "paro"];
+
+function isParo(teamName: string) {
+  return PARO_NAMES.some((n) => teamName.toLowerCase().includes(n));
 }
 
-export function LiveStandingsTable({ teams }: Props) {
+interface Props {
+  teams: StandingTeam[];
+  zones?: StandingsZones;
+}
+
+const STAT_COLS = [
+  { key: "played", label: "P" },
+  { key: "won", label: "W" },
+  { key: "drawn", label: "D" },
+  { key: "lost", label: "L" },
+  { key: "goalsFor", label: "GF" },
+  { key: "goalsAgainst", label: "GA" },
+  { key: "gd", label: "GD" },
+  { key: "points", label: "Pts" },
+] as const;
+
+export function LiveStandingsTable({ teams, zones }: Props) {
   return (
     <div className="overflow-x-auto">
       <table className="w-full min-w-[700px] border-collapse text-xs">
@@ -69,8 +104,8 @@ export function LiveStandingsTable({ teams }: Props) {
           <tr className="border-b border-white/10 text-2xs font-bold uppercase tracking-wider text-white/40">
             <th className="w-8 px-2 py-2.5 text-left">Pos</th>
             <th className="px-2 py-2.5 text-left">Club</th>
-            {["P", "W", "D", "L", "GF", "GA", "GD", "Pts"].map((h) => (
-              <th key={h} className="px-2 py-2.5 text-center">{h}</th>
+            {STAT_COLS.map((col) => (
+              <th key={col.key} className="px-2 py-2.5 text-center">{col.label}</th>
             ))}
             <th className="px-2 py-2.5 text-center">Form</th>
           </tr>
@@ -85,14 +120,20 @@ export function LiveStandingsTable({ teams }: Props) {
           ) : (
             teams.map((team) => {
               const gd = Number(team.goalsFor) - Number(team.goalsAgainst);
+              const paro = isParo(team.teamName);
+              const recentForm = team.form ?? [];
               return (
                 <tr
                   key={team.teamName}
-                  className="relative border-b border-white/5 transition hover:bg-white/[0.03]"
+                  className={`relative border-b border-white/5 transition ${
+                    paro
+                      ? "bg-parofc-red/[0.07] hover:bg-parofc-red/[0.12]"
+                      : "hover:bg-white/[0.03]"
+                  }`}
                 >
                   <td className="px-2 py-3 font-black relative">
-                    <ZoneBar position={team.position} />
-                    {team.position}
+                    <ZoneBar position={team.position} zones={zones} />
+                    <span className={paro ? "text-parofc-red" : undefined}>{team.position}</span>
                   </td>
                   <td className="px-2 py-3">
                     <div className="flex min-w-0 items-center gap-2">
@@ -103,17 +144,29 @@ export function LiveStandingsTable({ teams }: Props) {
                       ) : (
                         <TeamInitialsLogo name={team.teamName} />
                       )}
-                      <span className="truncate font-black uppercase">{team.teamName}</span>
+                      <span className={`truncate font-black uppercase ${paro ? "text-parofc-red" : ""}`}>
+                        {team.teamName}
+                      </span>
                     </div>
                   </td>
-                  {[team.played, team.won, team.drawn, team.lost, team.goalsFor, team.goalsAgainst, formatGD(gd), team.points].map((v, i) => (
-                    <td key={i} className={`px-2 py-3 text-center font-bold ${i === 7 ? "text-lg" : "text-white/70"}`}>
-                      {v}
-                    </td>
-                  ))}
+                  <td className="px-2 py-3 text-center font-bold text-white/70">{team.played}</td>
+                  <td className="px-2 py-3 text-center font-bold text-white/70">{team.won}</td>
+                  <td className="px-2 py-3 text-center font-bold text-white/70">{team.drawn}</td>
+                  <td className="px-2 py-3 text-center font-bold text-white/70">{team.lost}</td>
+                  <td className="px-2 py-3 text-center font-bold text-white/70">{team.goalsFor}</td>
+                  <td className="px-2 py-3 text-center font-bold text-white/70">{team.goalsAgainst}</td>
+                  <td className={`px-2 py-3 text-center font-bold ${gdColor(gd)}`}>{formatGD(gd)}</td>
+                  <td className="px-2 py-3 text-center font-black">{team.points}</td>
                   <td className="px-2 py-3">
                     <div className="flex justify-center gap-[3px]">
-                      {(team.form ?? []).map((f, i) => <FormBadge key={i} v={f} />)}
+                      {/* mobile: last 3; desktop: all 5 */}
+                      {recentForm.slice(-5).map((f, i) => (
+                        <FormBadge
+                          key={i}
+                          v={f}
+                          className={i < recentForm.slice(-5).length - 3 ? "hidden sm:grid" : undefined}
+                        />
+                      ))}
                     </div>
                   </td>
                 </tr>

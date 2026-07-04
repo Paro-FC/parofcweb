@@ -3,6 +3,7 @@ import {
   InstagramIcon,
   Linkedin01Icon,
   NewTwitterIcon,
+  Ticket01Icon,
   TiktokIcon,
   YoutubeIcon,
 } from "@hugeicons/core-free-icons";
@@ -183,21 +184,9 @@ export function Footer({ nextMatchTicketUrl }: FooterProps) {
             href={nextMatchTicketUrl || "/fixtures-results"}
             target={nextMatchTicketUrl ? "_blank" : undefined}
             rel={nextMatchTicketUrl ? "noopener noreferrer" : undefined}
-            className="mt-4 flex items-center justify-center gap-2 w-full rounded-lg bg-parofc-red py-2.5 text-2xs font-black uppercase tracking-wider text-white transition hover:bg-parofc-red/85"
+            className="mt-4 flex items-center justify-center gap-2 w-full rounded-lg bg-parofc-red py-2.5 text-2xs font-black uppercase tracking-wider text-white transition hover:bg-parofc-red/85 active:scale-[0.98]"
           >
-            <svg
-              width="13"
-              height="13"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              aria-hidden
-            >
-              <path d="M2 9a3 3 0 0 1 0 6v2a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-2a3 3 0 0 1 0-6V7a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2z" />
-            </svg>
+            <HugeiconsIcon icon={Ticket01Icon} size={13} />
             Buy Tickets
           </Link>
         </div>
@@ -211,10 +200,7 @@ export function Footer({ nextMatchTicketUrl }: FooterProps) {
             Reserved.
           </span>
           <div className="flex gap-5"></div>
-          <span
-            className="text-sm italic text-parofc-red/40"
-            style={{ fontFamily: "cursive" }}
-          >
+          <span className="text-sm italic text-parofc-red/40">
             pride of paro
           </span>
         </div>

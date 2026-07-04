@@ -5,6 +5,7 @@ import { ProductCard, type ProductCardData } from "@/components/ProductCard";
 import {
   LiveStandingsTable,
   sortTeamsByPoints,
+  type StandingTeam,
 } from "@/components/LiveStandingsTable";
 import { getYoutubeIdFromUrl } from "@/lib/youtube";
 import { urlFor } from "@/sanity/lib/image";
@@ -97,20 +98,6 @@ interface TrophyItem {
   total: number;
 }
 
-interface StandingTeam {
-  position: number;
-  teamName: string;
-  teamLogo?: string | null;
-  played: number;
-  won: number;
-  drawn: number;
-  lost: number;
-  goalsFor: number;
-  goalsAgainst: number;
-  points: number;
-  form?: string[] | null;
-}
-
 interface StandingDoc {
   _id: string;
   season: string;
@@ -165,7 +152,7 @@ function Crest({ size = "md" }: { size?: "sm" | "md" | "lg" }) {
   );
 }
 
-function TeamInitialsLogo({ name }: { name: string }) {
+function TeamInitialsLogo({ name, size = "sm" }: { name: string; size?: "sm" | "md" }) {
   const initials = name
     .split(" ")
     .filter(Boolean)
@@ -174,14 +161,17 @@ function TeamInitialsLogo({ name }: { name: string }) {
     .slice(0, 2)
     .toUpperCase();
 
+  const dim = size === "md" ? "h-9 w-9" : "h-7 w-7";
   return (
-    <div className="grid h-7 w-7 shrink-0 place-items-center rounded-full bg-white/5 ring-1 ring-white/10">
+    <div className={`grid ${dim} shrink-0 place-items-center rounded-full bg-white/5 ring-1 ring-white/10`}>
       <span className="text-3xs font-black uppercase tracking-wide text-white/40">
         {initials || "—"}
       </span>
     </div>
   );
 }
+
+const SCORER_RANK_COLORS = ["text-parofc-gold", "text-white/60", "text-amber-600"];
 
 function CountdownBlock({
   value,
@@ -268,211 +258,149 @@ export function HomeClient({
   );
   const standingTeams = sortTeamsByPoints(liveStandings?.teams ?? []);
   const sortedByPoints = standingTeams;
+  const leaderPts = sortedByPoints[0]?.points || 1;
 
-  const raceToTitle = sortedByPoints.slice(0, 5).map((t, idx) => {
-    const isParo = t.teamName.toLowerCase().includes("paro");
-    return {
-      pos: idx + 1,
-      name: t.teamName,
-      pts: t.points,
-      logo: t.teamLogo,
-      isParo,
-    };
-  });
+  const raceToTitle = sortedByPoints.slice(0, 5).map((t, idx) => ({
+    pos: idx + 1,
+    name: t.teamName,
+    pts: t.points,
+    gap: t.points - leaderPts,
+    logo: t.teamLogo,
+    isParo: t.teamName.toLowerCase().includes("paro"),
+  }));
 
   return (
     <div className="min-h-screen bg-near-black text-white">
       {/* ══════ HERO ══════ */}
       <Hero />
 
-      {/* ══════ NEXT MATCH BAR ══════ */}
+      {/* ══════ MATCHDAY BANNER ══════ */}
       {nextMatch && (
-        <section className="mx-auto max-w-[1400px] px-5 pt-5">
-          <div className="rounded-lg border border-parofc-red/20 bg-card-dark px-4 py-5 sm:px-6">
-            <div className="mb-5">
-              <h2 className="text-lg font-black uppercase text-parofc-red">
-                Next Match
-              </h2>
-              <p className="text-xs font-bold uppercase tracking-wider text-white/40">
-                {nextMatch.competition}
-              </p>
+        <section className="relative overflow-hidden border-b border-white/5">
+          {/* Stadium atmosphere */}
+          <div className="absolute inset-0 bg-gradient-to-br from-[#1c0404] via-[#0d0808] to-near-black" />
+          <div className="absolute inset-0 bg-[radial-gradient(ellipse_50%_100%_at_10%_50%,rgba(206,5,5,0.14)_0%,transparent_100%)]" />
+          {/* Ghost VS watermark */}
+          <div className="pointer-events-none absolute inset-0 flex items-center justify-center">
+            <span className="select-none text-[18vw] font-black uppercase leading-none text-white/[0.03]">VS</span>
+          </div>
+
+          <div className="relative mx-auto max-w-[1400px] px-5 py-8 lg:py-10">
+            {/* Header strip */}
+            <div className="mb-8 flex items-center gap-3">
+              <span className="text-[10px] font-black uppercase tracking-[0.22em] text-parofc-red/60">Next Match</span>
+              <span className="h-px flex-1 bg-parofc-red/10" />
+              <span className="text-[10px] font-black uppercase tracking-[0.22em] text-white/20">{nextMatch.competition}</span>
             </div>
 
-            <div className="flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between">
-              <div className="flex items-center justify-center gap-6 sm:gap-8">
-                <div className="text-center">
+            {/* Teams vs Countdown grid */}
+            <div className="grid grid-cols-1 gap-8 lg:grid-cols-[1fr_auto_1fr]">
+
+              {/* Home Team */}
+              <div className="flex items-center justify-center gap-4 lg:justify-end lg:text-right">
+                <div className="order-2 text-center lg:order-1 lg:text-right">
+                  <p className="text-3xl font-black uppercase leading-none tracking-tight sm:text-4xl lg:text-5xl">
+                    {nextMatch.homeTeam}
+                  </p>
+                  <p className="mt-1 text-[10px] font-bold uppercase tracking-[0.18em] text-white/30">Home</p>
+                </div>
+                <div className="order-1 shrink-0 overflow-hidden lg:order-2">
                   {nextMatch.homeCrest ? (
-                    <div className="mx-auto h-12 w-12 sm:h-16 sm:w-16 shrink-0 overflow-hidden rounded-full">
-                      <Image
-                        src={nextMatch.homeCrest}
-                        alt={nextMatch.homeTeam}
-                        width={64}
-                        height={64}
-                        className="h-full w-full object-contain"
-                      />
-                    </div>
+                    <Image src={nextMatch.homeCrest} alt={nextMatch.homeTeam} width={72} height={72} className="h-14 w-14 object-contain sm:h-18 sm:w-18" />
                   ) : (
                     <Crest size="lg" />
                   )}
-                  <p className="mt-2 max-w-[80px] sm:max-w-none text-xs font-black uppercase tracking-wider sm:text-base">
-                    {nextMatch.homeTeam}
-                  </p>
                 </div>
-                <div className="flex flex-col items-center gap-2 shrink-0">
-                  <div className="h-6 w-px bg-gradient-to-b from-transparent via-parofc-red/40 to-transparent" />
-                  <span className="text-2xl font-black text-white sm:text-4xl">
-                    VS
-                  </span>
-                  <div className="h-6 w-px bg-gradient-to-b from-transparent via-parofc-red/40 to-transparent" />
+              </div>
+
+              {/* Center: details + countdown */}
+              <div className="flex flex-col items-center gap-5">
+                {/* Date / Time / Venue */}
+                <div className="flex items-center gap-5 text-center">
+                  <div>
+                    <HugeiconsIcon icon={Calendar} size={20} className="mx-auto text-parofc-red/60 mb-1" strokeWidth={1.8} />
+                    <p className="text-sm font-black uppercase">
+                      {new Date(nextMatch.date).toLocaleDateString("en-US", { day: "numeric", month: "short" })}
+                    </p>
+                    <p className="text-2xs font-bold uppercase tracking-wider text-white/30">
+                      {new Date(nextMatch.date).toLocaleDateString("en-US", { weekday: "short", year: "numeric" })}
+                    </p>
+                  </div>
+                  <div className="h-10 w-px bg-white/10" />
+                  <div>
+                    <HugeiconsIcon icon={Clock} size={20} className="mx-auto text-parofc-red/60 mb-1" strokeWidth={1.8} />
+                    <p className="text-sm font-black uppercase">
+                      {new Date(nextMatch.date).toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit", hour12: false, timeZone: "Asia/Thimphu" })}
+                    </p>
+                    <p className="text-2xs font-bold uppercase tracking-wider text-white/30">Kick Off</p>
+                  </div>
+                  <div className="h-10 w-px bg-white/10" />
+                  <div>
+                    <HugeiconsIcon icon={MapPin} size={20} className="mx-auto text-parofc-red/60 mb-1" strokeWidth={1.8} />
+                    <p className="text-sm font-black uppercase">{nextMatch.venue}</p>
+                    <p className="text-2xs font-bold uppercase tracking-wider text-white/30">Venue</p>
+                  </div>
                 </div>
-                <div className="text-center">
-                  {nextMatch.awayCrest ? (
-                    <div className="mx-auto h-12 w-12 sm:h-16 sm:w-16 shrink-0 overflow-hidden rounded-full">
-                      <Image
-                        src={nextMatch.awayCrest}
-                        alt={nextMatch.awayTeam}
-                        width={64}
-                        height={64}
-                        className="h-full w-full object-contain"
-                      />
+
+                {/* Countdown */}
+                <div className="flex items-stretch divide-x divide-white/10 overflow-hidden rounded-md border border-white/10 bg-white/[0.03]">
+                  {[
+                    { v: countdown.days, l: "D" },
+                    { v: countdown.hrs, l: "H" },
+                    { v: countdown.mins, l: "M" },
+                    { v: countdown.secs, l: "S" },
+                  ].map(({ v, l }) => (
+                    <div key={l} className="px-4 py-3 text-center">
+                      <div className="text-2xl font-black tabular-nums text-parofc-red">{v}</div>
+                      <p className="text-3xs font-bold uppercase tracking-wider text-white/30">{l}</p>
                     </div>
+                  ))}
+                </div>
+
+                {/* CTAs */}
+                <div className="flex w-full max-w-xs flex-col gap-2">
+                  {nextMatch.ticketUrl && (
+                    <a
+                      href={nextMatch.ticketUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="flex w-full items-center justify-center gap-2 bg-parofc-red px-5 py-2.5 text-xs font-black uppercase tracking-wider text-white transition hover:bg-parofc-red/80 active:scale-[0.98]"
+                    >
+                      Buy Tickets
+                      <HugeiconsIcon icon={ArrowUpRight01Icon} size={13} strokeWidth={2} />
+                    </a>
+                  )}
+                  {nextMatch.matchUrl && nextMatch.showMatchLink !== false && (
+                    <a
+                      href={nextMatch.matchUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="flex w-full items-center justify-center gap-2 border border-parofc-gold/30 bg-parofc-gold/8 px-5 py-2.5 text-xs font-black uppercase tracking-wider text-parofc-gold transition hover:bg-parofc-gold hover:text-black active:scale-[0.98]"
+                    >
+                      Match Details
+                      <HugeiconsIcon icon={ArrowUpRight01Icon} size={13} strokeWidth={2} />
+                    </a>
+                  )}
+                </div>
+              </div>
+
+              {/* Away Team */}
+              <div className="flex items-center justify-center gap-4 lg:justify-start">
+                <div className="shrink-0 overflow-hidden">
+                  {nextMatch.awayCrest ? (
+                    <Image src={nextMatch.awayCrest} alt={nextMatch.awayTeam} width={72} height={72} className="h-14 w-14 object-contain sm:h-18 sm:w-18" />
                   ) : (
-                    <div className="mx-auto grid h-12 w-12 sm:h-16 sm:w-16 shrink-0 place-items-center rounded-full bg-white/10 text-sm sm:text-base font-black">
-                      {nextMatch.awayTeam
-                        .split(" ")
-                        .map((w: string) => w[0])
-                        .join("")
-                        .slice(0, 2)}
+                    <div className="grid h-14 w-14 place-items-center rounded-full bg-white/8 ring-1 ring-white/10">
+                      <span className="text-sm font-black uppercase">{nextMatch.awayTeam.split(" ").map((w: string) => w[0]).join("").slice(0, 2)}</span>
                     </div>
                   )}
-                  <p className="mt-2 max-w-[80px] sm:max-w-none text-xs font-black uppercase tracking-wider sm:text-base">
+                </div>
+                <div>
+                  <p className="text-3xl font-black uppercase leading-none tracking-tight sm:text-4xl lg:text-5xl">
                     {nextMatch.awayTeam}
                   </p>
+                  <p className="mt-1 text-[10px] font-bold uppercase tracking-[0.18em] text-white/30">Away</p>
                 </div>
-              </div>
-
-              <div className="hidden h-28 w-px bg-gradient-to-b from-transparent via-parofc-red/40 to-transparent lg:block" />
-
-              <div className="flex flex-col items-stretch sm:flex-row">
-                <div className="flex items-center justify-between py-2 sm:flex-col sm:justify-center sm:px-7">
-                  <HugeiconsIcon
-                    icon={Calendar}
-                    size={32}
-                    primaryColor="currentColor"
-                    className="text-white/50 sm:mb-2"
-                    strokeWidth={1.8}
-                  />
-                  <div className="text-right sm:text-center">
-                    <p className="text-sm font-black uppercase sm:text-base">
-                      {new Date(nextMatch.date).toLocaleDateString("en-US", {
-                        day: "numeric",
-                        month: "short",
-                        year: "numeric",
-                      })}
-                    </p>
-                    <p className="text-2xs font-bold uppercase tracking-wider text-white/40">
-                      {new Date(nextMatch.date).toLocaleDateString("en-US", {
-                        weekday: "long",
-                      })}
-                    </p>
-                  </div>
-                </div>
-                <div className="my-2 h-px w-full bg-gradient-to-r from-transparent via-parofc-red/40 to-transparent sm:my-2 sm:h-auto sm:w-px sm:bg-gradient-to-b" />
-                <div className="flex items-center justify-between py-2 sm:flex-col sm:justify-center sm:px-7">
-                  <HugeiconsIcon
-                    icon={Clock}
-                    size={32}
-                    primaryColor="currentColor"
-                    className="text-white/50 sm:mb-2"
-                    strokeWidth={1.8}
-                  />
-                  <div className="text-right sm:text-center">
-                    <p className="text-sm font-black uppercase sm:text-base">
-                      {new Date(nextMatch.date).toLocaleTimeString("en-GB", {
-                        hour: "2-digit",
-                        minute: "2-digit",
-                        hour12: false,
-                        timeZone: "Asia/Thimphu",
-                      })}
-                    </p>
-                    <p className="text-2xs font-bold uppercase tracking-wider text-white/40">
-                      Kick Off
-                    </p>
-                  </div>
-                </div>
-                <div className="my-2 h-px w-full bg-gradient-to-r from-transparent via-parofc-red/40 to-transparent sm:my-2 sm:h-auto sm:w-px sm:bg-gradient-to-b" />
-                <div className="flex items-center justify-between py-2 sm:flex-col sm:justify-center sm:px-7">
-                  <HugeiconsIcon
-                    icon={MapPin}
-                    size={32}
-                    primaryColor="currentColor"
-                    className="text-white/50 sm:mb-2"
-                    strokeWidth={1.8}
-                  />
-                  <div className="text-right sm:text-center">
-                    <p className="text-sm font-black uppercase sm:text-base">
-                      {nextMatch.venue}
-                    </p>
-                    <p className="text-2xs font-bold uppercase tracking-wider text-white/40">
-                      Venue
-                    </p>
-                  </div>
-                </div>
-              </div>
-
-              <div className="hidden h-28 w-px bg-gradient-to-b from-transparent via-parofc-red/40 to-transparent lg:block" />
-
-              <div className="flex flex-col gap-3">
-                <div className="grid grid-cols-2 gap-2 sm:flex sm:items-stretch sm:gap-0">
-                  <div className="rounded-md border border-white/10 bg-white/[0.03] sm:rounded-none sm:border-0 sm:bg-transparent">
-                    <CountdownBlock value={countdown.days} label="Days" />
-                  </div>
-                  <div className="rounded-md border border-white/10 bg-white/[0.03] sm:rounded-none sm:border-0 sm:bg-transparent">
-                    <CountdownBlock value={countdown.hrs} label="Hrs" />
-                  </div>
-                  <div className="rounded-md border border-white/10 bg-white/[0.03] sm:rounded-none sm:border-0 sm:bg-transparent">
-                    <CountdownBlock value={countdown.mins} label="Mins" />
-                  </div>
-                  <div className="rounded-md border border-white/10 bg-white/[0.03] sm:rounded-none sm:border-0 sm:bg-transparent">
-                    <CountdownBlock
-                      value={countdown.secs}
-                      label="Secs"
-                      showDivider={false}
-                    />
-                  </div>
-                </div>
-                {nextMatch.ticketUrl && (
-                  <a
-                    href={nextMatch.ticketUrl}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="inline-flex w-full items-center justify-center gap-2 rounded-md border border-parofc-red/50 bg-parofc-red px-4 py-2.5 text-xs font-black uppercase tracking-wider text-white transition hover:bg-parofc-red/80"
-                  >
-                    Buy Tickets
-                    <HugeiconsIcon
-                      icon={ArrowUpRight01Icon}
-                      size={14}
-                      primaryColor="currentColor"
-                      strokeWidth={1.9}
-                    />
-                  </a>
-                )}
-                {nextMatch.matchUrl && nextMatch.showMatchLink !== false ? (
-                  <a
-                    href={nextMatch.matchUrl}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="inline-flex w-full items-center justify-center gap-2 rounded-md border border-parofc-gold/35 bg-parofc-gold/10 px-4 py-2.5 text-xs font-black uppercase tracking-wider text-parofc-gold transition hover:bg-parofc-gold hover:text-dark-charcoal"
-                  >
-                    Open match link
-                    <HugeiconsIcon
-                      icon={ArrowUpRight01Icon}
-                      size={14}
-                      primaryColor="currentColor"
-                      strokeWidth={1.9}
-                    />
-                  </a>
-                ) : null}
               </div>
             </div>
           </div>
@@ -506,11 +434,6 @@ export function HomeClient({
           <div className="overflow-x-auto scrollbar-hide">
             <LiveStandingsTable teams={standingTeams} />
           </div>
-          {/* <div className="mt-4 flex flex-wrap gap-5 text-2xs font-bold uppercase tracking-wider text-white/40">
-            <span className="flex items-center gap-1.5"><span className="h-2.5 w-2.5 rounded-full bg-green-500" /> AFC Qualification</span>
-            <span className="flex items-center gap-1.5"><span className="h-2.5 w-2.5 rounded-full bg-orange-400" /> Relegation Play-off</span>
-            <span className="flex items-center gap-1.5"><span className="h-2.5 w-2.5 rounded-full bg-red-500" /> Relegation</span>
-          </div> */}
         </SectionCard>
 
         <div className="flex flex-col gap-5">
@@ -524,11 +447,10 @@ export function HomeClient({
             </Link>
             <div className="space-y-2">
               {raceToTitle.map((t) => {
-                const maxPts = sortedByPoints[0]?.points || 1;
-                const barPct = Math.max(20, Math.round((t.pts / maxPts) * 100));
+                const barPct = Math.max(4, Math.round((t.pts / leaderPts) * 100));
                 return (
                   <div key={t.pos} className="flex items-center gap-3">
-                    <span className="w-5 text-lg font-black text-white/30">
+                    <span className="w-5 text-xs font-black text-white/30">
                       {t.pos}
                     </span>
                     <div
@@ -555,7 +477,7 @@ export function HomeClient({
                             {t.name}
                           </p>
                           <p
-                            className={`text-base font-black ${t.isParo ? "text-parofc-red" : "text-white"}`}
+                            className={`text-xs font-black ${t.isParo ? "text-parofc-red" : "text-white"}`}
                           >
                             {t.pts}{" "}
                             <span className="text-2xs font-bold text-white/40">
@@ -563,6 +485,11 @@ export function HomeClient({
                             </span>
                           </p>
                         </div>
+                        {t.gap < 0 && (
+                          <span className="shrink-0 text-2xs font-bold text-white/30">
+                            {t.gap}
+                          </span>
+                        )}
                       </div>
                       <div className="mt-2 h-[2px] rounded-full bg-white/10">
                         <div
@@ -593,18 +520,13 @@ export function HomeClient({
               </div>
               <div className="space-y-2">
                 {topScorers.map((scorer, idx) => {
-                  const rankColors = [
-                    "text-parofc-gold",
-                    "text-white/60",
-                    "text-amber-600",
-                  ];
                   return (
                     <div
                       key={scorer._id}
                       className={`flex items-center gap-3 rounded-md border px-3 py-2.5 ${idx === 0 ? "border-parofc-red/30 bg-gradient-to-r from-parofc-red/10 to-transparent" : "border-white/10"}`}
                     >
                       <span
-                        className={`w-5 shrink-0 text-lg font-black ${rankColors[idx] ?? "text-white/30"}`}
+                        className={`w-5 shrink-0 text-xs font-black ${SCORER_RANK_COLORS[idx] ?? "text-white/30"}`}
                       >
                         {idx + 1}
                       </span>
@@ -619,15 +541,7 @@ export function HomeClient({
                           />
                         </div>
                       ) : (
-                        <div className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-white/5 ring-1 ring-white/10">
-                          <span className="text-3xs font-black uppercase text-white/40">
-                            {scorer.name
-                              .split(" ")
-                              .map((w) => w[0])
-                              .join("")
-                              .slice(0, 2)}
-                          </span>
-                        </div>
+                        <TeamInitialsLogo name={scorer.name} size="md" />
                       )}
                       <div className="min-w-0 flex-1">
                         <p className="truncate text-xs font-black uppercase">
@@ -639,7 +553,7 @@ export function HomeClient({
                       </div>
                       <div className="flex items-baseline gap-1 shrink-0">
                         <span
-                          className={`text-xl font-black ${idx === 0 ? "text-parofc-red" : "text-white"}`}
+                          className={`text-sm font-black ${idx === 0 ? "text-parofc-red" : "text-white"}`}
                         >
                           {scorer.goals}
                         </span>
@@ -657,6 +571,7 @@ export function HomeClient({
       </section>
 
       {/* ══════ LATEST BLOG ══════ */}
+
       {topBlogs.length > 0 && (
         <section className="mx-auto max-w-[1400px] px-5 pt-5">
           <SectionCard className="p-6">
@@ -781,6 +696,7 @@ export function HomeClient({
         </section>
       )}
 
+
       {/* ══════ PARO FC TV ══════ */}
       {topVideos.length > 0 && (
         <section className="mx-auto max-w-[1400px] px-5 pt-5">
@@ -843,27 +759,29 @@ export function HomeClient({
       {/* ══════ SHOP ══════ */}
       {products.length > 0 && (
         <section className="mx-auto max-w-[1400px] px-5 pt-5">
-          <SectionCard className="p-5">
-            <div className="mb-5 flex items-center justify-between">
-              <div>
-                <h2 className="text-xl font-black uppercase">Official Store</h2>
-                <p className="text-2xs font-bold uppercase tracking-wider text-white/40">
-                  Paro FC Merchandise
-                </p>
+          <div className="rounded-lg border border-parofc-red/20 bg-card-dark overflow-hidden">
+            <div className="flex items-end justify-between border-b border-parofc-red/20 px-5 py-4">
+              <div className="flex items-center gap-3">
+                <div className="h-6 w-[3px] bg-parofc-gold" />
+                <div>
+                  <h2 className="text-2xl font-black uppercase tracking-tight">Official Store</h2>
+                  <p className="text-2xs font-bold uppercase tracking-wider text-white/30">Paro FC Merchandise</p>
+                </div>
               </div>
               <Link
                 href="/shop"
-                className="rounded-lg border border-parofc-gold/30 px-4 py-2 text-2xs font-black uppercase tracking-wider text-parofc-gold transition hover:bg-parofc-gold/10"
+                className="flex items-center gap-2 bg-parofc-gold px-4 py-2 text-[10px] font-black uppercase tracking-[0.18em] text-dark-charcoal transition hover:bg-parofc-gold/80 active:scale-[0.98]"
               >
-                View All →
+                View All
+                <HugeiconsIcon icon={ArrowUpRight01Icon} size={12} strokeWidth={2.5} />
               </Link>
             </div>
-            <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
+            <div className="grid grid-cols-2 gap-3 p-5 md:grid-cols-4 md:gap-5">
               {products.slice(0, 4).map((product, index) => (
                 <ProductCard key={product._id} product={product} index={index} theme="dark" />
               ))}
             </div>
-          </SectionCard>
+          </div>
         </section>
       )}
 
@@ -871,9 +789,7 @@ export function HomeClient({
       {mainPartners.length > 0 && (
         <section className="mx-auto max-w-[1400px] px-5 pt-5 pb-8">
           <SectionCard className="p-6">
-            <h2 className="mb-6 text-base font-black uppercase">
-              Our Partners
-            </h2>
+            <h2 className="mb-6 text-base font-black uppercase">Our Partners</h2>
             <div className="grid grid-cols-2 gap-4 md:grid-cols-5">
               {sortedMainPartners.map((p) => (
                 <a
@@ -909,9 +825,7 @@ export function HomeClient({
       {subPartners.length > 0 && (
         <section className="mx-auto max-w-[1400px] px-5 pb-8">
           <SectionCard className="p-6">
-            <h2 className="mb-6 text-base font-black uppercase">
-              Sub Partners
-            </h2>
+            <h2 className="mb-6 text-base font-black uppercase">Sub Partners</h2>
             <div className="grid grid-cols-2 gap-4 md:grid-cols-5">
               {sortedSubPartners.map((p) => (
                 <a

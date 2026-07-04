@@ -3,17 +3,16 @@
 import Loader from "@/components/Loader";
 import { PlayerCard, type PlayerCardPlayer } from "@/components/PlayerCard";
 import { urlFor } from "@/sanity/lib/image";
-import { sanityFetch } from "@/sanity/lib/live";
+import { useSanityLiveQuery } from "@/sanity/lib/live-client";
 import {
   COACHING_STAFF_QUERY,
   PLAYERS_BY_TEAM_QUERY,
 } from "@/sanity/lib/queries";
-import { Cancel01Icon, UserGroupIcon } from "@hugeicons/core-free-icons";
+import { UserGroupIcon } from "@hugeicons/core-free-icons";
 import { HugeiconsIcon } from "@hugeicons/react";
 import { AnimatePresence, motion } from "framer-motion";
 import Image from "next/image";
-import { useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 
 interface Player extends PlayerCardPlayer {
   team?: string;
@@ -50,49 +49,15 @@ const positionCategories: { id: PositionCategory; label: string }[] = [
 ];
 
 export default function PlayersPage() {
-  const router = useRouter();
   const [activeTeam, setActiveTeam] = useState<TeamType>("mens");
   const [activeCategory, setActiveCategory] =
     useState<PositionCategory>("goalkeepers");
-  const [players, setPlayers] = useState<Player[]>([]);
-  const [coachingStaff, setCoachingStaff] = useState<CoachingStaff[]>([]);
-  const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    const fetchPlayers = async () => {
-      setLoading(true);
-      try {
-        const result = await sanityFetch({
-          query: PLAYERS_BY_TEAM_QUERY,
-          params: { team: activeTeam },
-        });
-        setPlayers((result.data as Player[]) || []);
-      } catch (error) {
-        console.error("Error fetching players:", error);
-        setPlayers([]);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchPlayers();
-  }, [activeTeam]);
-
-  useEffect(() => {
-    const fetchCoachingStaff = async () => {
-      try {
-        const result = await sanityFetch({
-          query: COACHING_STAFF_QUERY,
-          params: { team: activeTeam },
-        });
-        setCoachingStaff((result.data as CoachingStaff[]) || []);
-      } catch (error) {
-        console.error("Error fetching coaching staff:", error);
-        setCoachingStaff([]);
-      }
-    };
-    fetchCoachingStaff();
-  }, [activeTeam]);
+  const playersData = useSanityLiveQuery<Player[] | null>(PLAYERS_BY_TEAM_QUERY, { team: activeTeam }, null);
+  const coachingData = useSanityLiveQuery<CoachingStaff[] | null>(COACHING_STAFF_QUERY, { team: activeTeam }, null);
+  const loading = playersData === null;
+  const players = playersData ?? [];
+  const coachingStaff = coachingData ?? [];
 
   const grouped: Record<string, Player[]> = {
     goalkeepers: players.filter((p) => p.position === "Goalkeeper"),
@@ -370,26 +335,6 @@ export default function PlayersPage() {
           </AnimatePresence>
         )}
       </div>
-
-      <style
-        dangerouslySetInnerHTML={{
-          __html: `
-          .scrollbar-hide::-webkit-scrollbar {
-            display: none;
-          }
-          .scrollbar-hide {
-            -ms-overflow-style: none;
-            scrollbar-width: none;
-          }
-        `,
-        }}
-      />
-      <button
-        onClick={() => router.push("/")}
-        className="fixed bottom-8 left-1/2 -translate-x-1/2 z-50 w-14 h-14 bg-gray-900 hover:bg-gray-800 text-white rounded-full shadow-2xl flex items-center justify-center transition-all hover:scale-110"
-      >
-        <HugeiconsIcon icon={Cancel01Icon} size={24} />
-      </button>
     </div>
   );
 }

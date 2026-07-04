@@ -1,3 +1,4 @@
+import "../index.css";
 import { ChatbotScript } from "@/components/ChatbotScript";
 import { ConditionalLayout } from "@/components/ConditionalLayout";
 import { sanityFetch } from "@/sanity/lib/live";
@@ -5,9 +6,16 @@ import { SanityLive } from "@/sanity/lib/live-client";
 import { PARTNERS_QUERY, NEXT_MATCH_TICKET_QUERY } from "@/sanity/lib/queries";
 import { SpeedInsights } from "@vercel/speed-insights/next";
 import type { Metadata } from "next";
+import { Hanken_Grotesk } from "next/font/google";
 import { unstable_cache } from "next/cache";
 import Script from "next/script";
-import "../index.css";
+
+const hanken = Hanken_Grotesk({
+  subsets: ["latin"],
+  weight: ["400", "500", "600", "700", "800", "900"],
+  variable: "--font-hanken",
+  display: "swap",
+});
 
 const getCachedPartners = unstable_cache(
   async () => {
@@ -52,7 +60,7 @@ export default async function RootLayout({
   const nextMatchTicketUrl = await getCachedNextMatchTicketUrl();
 
   return (
-    <html lang="en" suppressHydrationWarning>
+    <html lang="en" suppressHydrationWarning className={hanken.variable}>
       <head />
       <body className="bg-near-black">
         <ConditionalLayout partners={partners as any} nextMatchTicketUrl={nextMatchTicketUrl}>

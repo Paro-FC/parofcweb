@@ -3,12 +3,14 @@
 import { useCart } from "@/contexts/CartContext";
 import { useSideMenu } from "@/contexts/SideMenuContext";
 import {
+  ArrowDown01Icon,
   ArrowUpRight01Icon,
   Menu01Icon,
   Search01Icon,
   ShoppingBag01Icon,
 } from "@hugeicons/core-free-icons";
 import { HugeiconsIcon } from "@hugeicons/react";
+import { AnimatePresence, motion } from "framer-motion";
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
@@ -20,16 +22,15 @@ const leftLinks = [
   { href: "/fixtures-results", label: "Fixtures" },
   { href: "/players", label: "Squads" },
   { href: "/about", label: "About Paro FC" },
+  { href: "/academy", label: "Academy" },
 ];
 
 const rightLinks = [
-  { href: "/academy", label: "Academy" },
   { href: "/news", label: "In the News" },
   { href: "/blogs", label: "Blogs" },
 ];
 
 const moreLinks = [
-  { href: "/shop", label: "Shop" },
   { href: "/photos", label: "Photos" },
   { href: "/ebooks", label: "Ebooks" },
 ];
@@ -37,14 +38,23 @@ const moreLinks = [
 export function MainNav() {
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [moreOpen, setMoreOpen] = useState(false);
+  const [scrolled, setScrolled] = useState(false);
   const moreRef = useRef<HTMLDivElement>(null);
   const { openMenu } = useSideMenu();
   const { getItemCount, setIsCartOpen } = useCart();
   const [mounted, setMounted] = useState(false);
   const pathname = usePathname();
+  const isHome = pathname === "/";
 
   useEffect(() => {
     setMounted(true);
+  }, []);
+
+  useEffect(() => {
+    const onScroll = () => setScrolled(window.scrollY > 20);
+    onScroll();
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => window.removeEventListener("scroll", onScroll);
   }, []);
 
   useEffect(() => {
@@ -78,13 +88,15 @@ export function MainNav() {
       isActive(href) ? "text-parofc-red" : "text-white/35 hover:text-light-gold"
     }`;
 
+  const showTransparent = isHome && !scrolled;
+
   return (
     <>
       {/* Mobile Header */}
-      <nav className="md:hidden sticky top-0 z-50 bg-dark-charcoal font-display overflow-hidden">
-        {/* Stadium lighting glow */}
+      <nav
+        className={`md:hidden sticky top-0 z-50 font-display overflow-hidden transition-colors duration-300 ${showTransparent ? "bg-dark-charcoal/80 backdrop-blur-md" : "bg-dark-charcoal"}`}
+      >
         <div className="absolute inset-0 pointer-events-none bg-[radial-gradient(ellipse_90%_60%_at_50%_-10%,rgba(206,5,5,0.13)_0%,transparent_100%)]" />
-
         <div className="relative flex items-center justify-between px-4 h-16">
           <Link href="/" className="flex-shrink-0">
             <Image
@@ -112,7 +124,7 @@ export function MainNav() {
             >
               <HugeiconsIcon icon={ShoppingBag01Icon} size={18} />
               {cartCount > 0 && (
-                <span className="absolute top-1 right-1 bg-parofc-red text-white text-[8px] font-bold w-4 h-4 flex items-center justify-center">
+                <span className="absolute top-1 right-1 bg-parofc-red text-white text-[8px] font-bold min-w-4 h-4 px-1 flex items-center justify-center rounded-full">
                   {cartCount}
                 </span>
               )}
@@ -126,19 +138,18 @@ export function MainNav() {
             </button>
           </div>
         </div>
-
         <div className="h-px bg-gradient-to-r from-parofc-red via-light-gold to-bronze" />
       </nav>
 
       {/* Desktop Navigation */}
-      <nav className="hidden md:block sticky top-0 z-50 bg-dark-charcoal font-display">
-        {/* Stadium lighting glow — red floodlight from above */}
+      <nav
+        className={`hidden md:block sticky top-0 z-50 font-display transition-colors duration-300 ${showTransparent ? "bg-dark-charcoal/80 backdrop-blur-md" : "bg-dark-charcoal"}`}
+      >
         <div className="absolute inset-0 pointer-events-none bg-[radial-gradient(ellipse_70%_80%_at_50%_-20%,rgba(206,5,5,0.11)_0%,transparent_100%)]" />
-        {/* Subtle gold warmth at top edge */}
         <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-[rgba(239,226,141,0.25)] to-transparent" />
 
         <div className="relative container mx-auto px-6 flex items-center justify-between h-20">
-          {/* Left: Club links */}
+          {/* Left links */}
           <div className="flex items-center gap-8 flex-1">
             {leftLinks.map((link) => (
               <Link
@@ -149,7 +160,7 @@ export function MainNav() {
                 className={linkClass(link.href)}
               >
                 {link.label}
-                <HugeiconsIcon icon={ArrowUpRight01Icon} size={10} />
+                <HugeiconsIcon icon={ArrowUpRight01Icon} size={10} strokeWidth={2.5} />
               </Link>
             ))}
           </div>
@@ -169,7 +180,7 @@ export function MainNav() {
             />
           </Link>
 
-          {/* Right: Content links + icons */}
+          {/* Right links + icons */}
           <div className="flex items-center gap-8 flex-1 justify-end">
             {rightLinks.map((link) => (
               <Link
@@ -180,7 +191,7 @@ export function MainNav() {
                 className={linkClass(link.href)}
               >
                 {link.label}
-                <HugeiconsIcon icon={ArrowUpRight01Icon} size={10} />
+                <HugeiconsIcon icon={ArrowUpRight01Icon} size={10} strokeWidth={2.5} />
               </Link>
             ))}
 
@@ -195,45 +206,61 @@ export function MainNav() {
                 }`}
               >
                 More
-                <svg
-                  width="10"
-                  height="10"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2.5"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
+                <HugeiconsIcon
+                  icon={ArrowDown01Icon}
+                  size={11}
                   className={`transition-transform duration-200 ${moreOpen ? "rotate-180" : ""}`}
-                >
-                  <polyline points="6 9 12 15 18 9" />
-                </svg>
+                />
               </button>
 
-              {moreOpen && (
-                <div className="absolute right-0 top-full mt-3 w-36 bg-dark-charcoal border border-white/10 shadow-xl z-50 py-1">
-                  {moreLinks.map((link) => (
-                    <Link
-                      key={link.href}
-                      href={link.href}
-                      prefetch
-                      scroll={false}
-                      onClick={() => setMoreOpen(false)}
-                      className={`flex items-center justify-between px-4 py-2.5 text-[10px] font-bold uppercase tracking-[0.18em] transition-colors duration-150 ${
-                        isActive(link.href)
-                          ? "text-parofc-red"
-                          : "text-white/35 hover:text-light-gold"
-                      }`}
-                    >
-                      {link.label}
-                      <HugeiconsIcon icon={ArrowUpRight01Icon} size={10} />
-                    </Link>
-                  ))}
-                </div>
-              )}
+              <AnimatePresence>
+                {moreOpen && (
+                  <motion.div
+                    initial={{ opacity: 0, y: -6 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -6 }}
+                    transition={{ duration: 0.15 }}
+                    className="absolute right-0 top-full mt-3 w-36 bg-dark-charcoal border border-white/10 shadow-xl z-50 py-1"
+                  >
+                    {moreLinks.map((link) => (
+                      <Link
+                        key={link.href}
+                        href={link.href}
+                        prefetch
+                        scroll={false}
+                        onClick={() => setMoreOpen(false)}
+                        className={`flex items-center justify-between px-4 py-2.5 text-[10px] font-bold uppercase tracking-[0.18em] transition-colors duration-150 ${
+                          isActive(link.href)
+                            ? "text-parofc-red"
+                            : "text-white/35 hover:text-light-gold"
+                        }`}
+                      >
+                        {link.label}
+                      </Link>
+                    ))}
+                  </motion.div>
+                )}
+              </AnimatePresence>
             </div>
 
             <div className="w-px h-4 bg-white/10 mx-1" />
+
+            {/* Shop CTA */}
+            <Link
+              href="/shop"
+              className={`inline-flex items-center gap-1.5 px-3 py-1.5 text-[10px] font-black uppercase tracking-[0.18em] transition-all duration-200 active:scale-[0.97] ${
+                isActive("/shop")
+                  ? "bg-parofc-red text-white"
+                  : "bg-parofc-red/10 text-parofc-red border border-parofc-red/30 hover:bg-parofc-red hover:text-white"
+              }`}
+            >
+              Shop
+              <HugeiconsIcon
+                icon={ArrowUpRight01Icon}
+                size={10}
+                strokeWidth={2.5}
+              />
+            </Link>
 
             <button
               onClick={() => setIsSearchOpen(true)}
@@ -249,7 +276,7 @@ export function MainNav() {
             >
               <HugeiconsIcon icon={ShoppingBag01Icon} size={15} />
               {cartCount > 0 && (
-                <span className="absolute -top-0.5 -right-0.5 bg-parofc-red text-white text-[8px] font-bold w-4 h-4 flex items-center justify-center">
+                <span className="absolute -top-0.5 -right-1 bg-parofc-red text-white text-[8px] font-bold min-w-4 h-4 px-1 flex items-center justify-center rounded-full">
                   {cartCount}
                 </span>
               )}
@@ -257,7 +284,6 @@ export function MainNav() {
           </div>
         </div>
 
-        {/* Bottom accent — red bleeds into gold into bronze */}
         <div className="h-px bg-gradient-to-r from-parofc-red via-light-gold to-bronze" />
       </nav>
 
