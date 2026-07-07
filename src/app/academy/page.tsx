@@ -165,24 +165,30 @@ export default function AcademyPage() {
           Paro FC Academy
         </p>
         <h2 className="text-2xl md:text-3xl font-black text-dark-charcoal uppercase tracking-tight mb-6">
-          {academy?.subtitle || "Developing Bhutan’s Future, One Generation at a Time"}
+          {academy?.subtitle ||
+            "Developing Bhutan’s Future, One Generation at a Time"}
         </h2>
         {Array.isArray(academy?.intro) && academy!.intro!.length > 0 ? (
           <div className="prose prose-lg max-w-none">
-            <PortableText value={academy!.intro!.filter(Boolean) as any} components={components} />
+            <PortableText
+              value={academy!.intro!.filter(Boolean) as any}
+              components={components}
+            />
           </div>
         ) : (
           <div className="space-y-4 text-base md:text-lg text-gray-700 leading-relaxed">
-            <p>At Paro FC, player development begins long before the first team.</p>
             <p>
-              Our academy is built on a clear long-term pathway—designed to identify talent early,
-              nurture character, and develop technically gifted footballers who can compete at the
-              highest level.
+              At Paro FC, player development begins long before the first team.
             </p>
             <p>
-              From grassroots beginnings to elite youth competition, every player at Paro FC is
-              guided through a structured football journey built on discipline, learning, and
-              excellence.
+              Our academy is built on a clear long-term pathway—designed to
+              identify talent early, nurture character, and develop technically
+              gifted footballers who can compete at the highest level.
+            </p>
+            <p>
+              From grassroots beginnings to elite youth competition, every
+              player at Paro FC is guided through a structured football journey
+              built on discipline, learning, and excellence.
             </p>
             <p className="font-semibold text-dark-charcoal">
               This is where future Tigers are made.

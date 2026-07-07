@@ -1,5 +1,5 @@
 import "../index.css";
-import { ChatbotScript } from "@/components/ChatbotScript";
+// import { ChatbotScript } from "@/components/ChatbotScript";
 import { ConditionalLayout } from "@/components/ConditionalLayout";
 import { sanityFetch } from "@/sanity/lib/live";
 import { SanityLive } from "@/sanity/lib/live-client";
@@ -67,7 +67,7 @@ export default async function RootLayout({
           {children}
         </ConditionalLayout>
         <SanityLive />
-        <ChatbotScript />
+        {/* <ChatbotScript /> */}
         {/* Privacy-friendly analytics by Plausible */}
         <Script id="plausible-init" strategy="afterInteractive">
           {`window.plausible=window.plausible||function(){(plausible.q=plausible.q||[]).push(arguments)},plausible.init=plausible.init||function(i){plausible.o=i||{}};plausible.init();`}
