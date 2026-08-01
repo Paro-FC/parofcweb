@@ -76,6 +76,12 @@ export default async function RootLayout({
           src="http://localhost:8080/js/pa-19zkOjsnH4gqiklTplcwP.js"
           strategy="afterInteractive"
         />
+        <Script
+          async
+          src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-7744012742101710"
+          crossOrigin="anonymous"
+          strategy="lazyOnload"
+        />
         <SpeedInsights />
       </body>
     </html>
