@@ -8,9 +8,9 @@ module.exports = {
   theme: {
     extend: {
       fontFamily: {
-        sans: ["var(--font-hanken)", "system-ui", "sans-serif"],
-        display: ["var(--font-hanken)", "system-ui", "sans-serif"],
-        heading: ["var(--font-hanken)", "system-ui", "sans-serif"],
+        sans: ["var(--font-calsans)", "system-ui", "sans-serif"],
+        display: ["var(--font-calsans)", "system-ui", "sans-serif"],
+        heading: ["var(--font-calsans)", "system-ui", "sans-serif"],
       },
       fontSize: {
         "5xs": ["7px", { lineHeight: "1.2", letterSpacing: "0.06em" }],
